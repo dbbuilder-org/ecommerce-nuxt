@@ -1,0 +1,80 @@
+{
+  "routes": [
+    {
+      "route": "/westmoreland/api/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/windermere/api/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/index.html",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/config*.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/js/*.js",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/css/*.css",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/images/*.jpg",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000",
+        "Content-Type": "image/jpeg"
+      }
+    },
+    {
+      "route": "/images/*.jpeg",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000",
+        "Content-Type": "image/jpeg"
+      }
+    },
+    {
+      "route": "/images/*.png",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000",
+        "Content-Type": "image/png"
+      }
+    },
+    {
+      "route": "/images/*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/westmoreland/api/*", "/windermere/api/*", "/images/*", "/*.{css,scss,js,png,gif,ico,jpg,jpeg,svg,woff,woff2,ttf,eot}"]
+  },
+  "mimeTypes": {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon"
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block"
+  }
+}

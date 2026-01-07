@@ -1,0 +1,41 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#f8fafc"/>
+  
+  <!-- Gradient overlay -->
+  <defs>
+    <linearGradient id="coldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0c85b6;stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:#7EB3D7;stop-opacity:0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#coldGradient)"/>
+  
+  <!-- Winter Jacket Icon -->
+  <g transform="translate(140, 70)">
+    <!-- Jacket body -->
+    <path d="M30 50 L30 140 L90 140 L90 50 L85 40 L75 45 L45 45 L35 40 Z" fill="#0c85b6" stroke="#035891" stroke-width="2"/>
+    <!-- Hood -->
+    <path d="M35 40 Q60 25 85 40" fill="none" stroke="#035891" stroke-width="3"/>
+    <!-- Zipper -->
+    <line x1="60" y1="45" x2="60" y2="140" stroke="#035891" stroke-width="2"/>
+    <!-- Pockets -->
+    <rect x="40" y="80" width="15" height="12" rx="2" fill="none" stroke="#035891" stroke-width="1"/>
+    <rect x="65" y="80" width="15" height="12" rx="2" fill="none" stroke="#035891" stroke-width="1"/>
+    <!-- Sleeves -->
+    <ellipse cx="25" cy="70" rx="10" ry="20" fill="#0c85b6" stroke="#035891" stroke-width="2"/>
+    <ellipse cx="95" cy="70" rx="10" ry="20" fill="#0c85b6" stroke="#035891" stroke-width="2"/>
+  </g>
+  
+  <!-- Snowflake decorations -->
+  <g fill="#7EB3D7" opacity="0.6">
+    <text x="80" y="80" font-family="Arial" font-size="20">❄</text>
+    <text x="320" y="120" font-family="Arial" font-size="16">❄</text>
+    <text x="60" y="200" font-family="Arial" font-size="18">❄</text>
+    <text x="340" y="200" font-family="Arial" font-size="14">❄</text>
+  </g>
+  
+  <!-- Text -->
+  <text x="200" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#035891">Cold Day Gear</text>
+  <text x="200" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">Jackets, hoodies & warm clothing</text>
+</svg>

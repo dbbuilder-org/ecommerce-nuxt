@@ -1,0 +1,27 @@
+# robots.txt for E-Commerce Application
+# https://ecommerce-demo.schoolvision.io
+
+# Allow all search engines to index the site
+User-agent: *
+Allow: /
+
+# Disallow admin and API endpoints
+Disallow: /admin/
+Disallow: /api/
+
+# Disallow payment processing pages (to avoid indexing checkout steps)
+Disallow: /payment-response
+Disallow: /payment-success
+Disallow: /payment-cancelled
+Disallow: /payment-error
+
+# Allow all product and category pages
+Allow: /shop
+Allow: /product/
+Allow: /category/
+
+# Sitemap location
+Sitemap: https://ecommerce-demo.schoolvision.io/sitemap.xml
+Sitemap: https://ecommerce-demo.schoolvision.io/westmoreland/sitemap.xml
+Sitemap: https://ecommerce-demo.schoolvision.io/windermere/sitemap.xml
+Sitemap: https://ecommerce-demo.schoolvision.io/coastalab/sitemap.xml
