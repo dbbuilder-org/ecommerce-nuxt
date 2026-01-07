@@ -13,18 +13,21 @@ export default defineNuxtConfig({
   // },
 
   // Runtime configuration - accessible in server and client
+  // Server-side env vars are automatically mapped: runtimeConfig.fooBar -> NUXT_FOO_BAR
   runtimeConfig: {
     // Server-only secrets (never sent to client)
-    paymentApiSecret: process.env.PAYMENT_API_SECRET || '',
-    paymentApiBaseUrl: process.env.PAYMENT_API_BASE_URL || 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
-    signingKey: process.env.SIGNING_KEY || '',
+    // Auto-mapped from NUXT_PAYMENT_API_SECRET, NUXT_PAYMENT_API_BASE_URL, NUXT_SIGNING_KEY
+    paymentApiSecret: '',
+    paymentApiBaseUrl: 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
+    signingKey: '',
 
     // Public config (available on client)
+    // Auto-mapped from NUXT_PUBLIC_* env vars
     public: {
-      schoolCode: process.env.NUXT_PUBLIC_SCHOOL_CODE || 'westmoreland',
-      schoolName: process.env.NUXT_PUBLIC_SCHOOL_NAME || 'Westmoreland County Community College',
-      recaptchaSiteKey: process.env.NUXT_PUBLIC_RECAPTCHA_SITE_KEY || '6Ld4dqkdAAAAAAHq9rPfvqbcStxmKtoLQ9QI96oK',
-      theme: process.env.NUXT_PUBLIC_THEME || 'westmoreland',
+      schoolCode: 'westmoreland',
+      schoolName: 'Westmoreland County Community College',
+      recaptchaSiteKey: '6Ld4dqkdAAAAAAHq9rPfvqbcStxmKtoLQ9QI96oK',
+      theme: 'westmoreland',
     }
   },
 
