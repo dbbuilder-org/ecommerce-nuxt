@@ -21,13 +21,17 @@ export default defineNuxtConfig({
     paymentApiBaseUrl: 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
     signingKey: '',
 
+    // Ecommerce API base
+    ecommerceApiBase: 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
+    ecommerceApiKey: '',
+
     // Public config (available on client)
     // Auto-mapped from NUXT_PUBLIC_* env vars
     public: {
       schoolCode: 'westmoreland',
       schoolName: 'Westmoreland County Community College',
       recaptchaSiteKey: '6Ld4dqkdAAAAAAHq9rPfvqbcStxmKtoLQ9QI96oK',
-      theme: 'westmoreland',
+      defaultTheme: 'westmoreland',
     }
   },
 
@@ -40,8 +44,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
-    '@vueuse/nuxt',
-    'nuxt-icon',
+    'pinia-plugin-persistedstate/nuxt',
+    '@nuxt/icon',
     'nuxt-security',
   ],
 
@@ -202,9 +206,7 @@ export default defineNuxtConfig({
   experimental: {
     // Payload extraction for better hydration
     payloadExtraction: true,
-    // Tree-shake client-only components
-    treeshakeClientOnly: true,
   },
 
-  compatibilityDate: '2025-01-01',
+  compatibilityDate: '2026-01-07',
 })

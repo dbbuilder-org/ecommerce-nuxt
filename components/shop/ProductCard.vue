@@ -1,5 +1,8 @@
 <template>
-  <div class="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+  <div
+    class="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+    @click="handleClick"
+  >
     <!-- Product Image -->
     <div class="aspect-square bg-gray-100 relative overflow-hidden">
       <img
@@ -12,10 +15,16 @@
         <Icon name="heroicons:photo" class="w-16 h-16 text-gray-300" />
       </div>
 
+      <!-- Availability Badge -->
+      <div v-if="product.available === false" class="absolute top-2 left-2">
+        <UiBadge variant="error" size="sm">Out of Stock</UiBadge>
+      </div>
+
       <!-- Quick Add Button -->
       <button
-        @click="handleAddToCart"
-        class="absolute bottom-2 right-2 bg-primary-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700"
+        @click.stop="handleAddToCart"
+        :disabled="product.available === false"
+        class="absolute bottom-2 right-2 bg-primary-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         <Icon name="heroicons:plus" class="w-5 h-5" />
       </button>
@@ -33,12 +42,29 @@
 </template>
 
 <script setup lang="ts">
-interface Product {
+import { formatCurrency } from '~/utils/currency'
+
+export interface Product {
   id: number
   name: string
   price: number
   description?: string
   image?: string
+  available?: boolean
+  sizeVariations?: Array<{
+    id: number
+    size?: string
+    price: number
+    available?: boolean
+  }>
+  variants?: Array<{
+    id: number
+    size?: string
+    price: number
+    available?: boolean
+  }>
+  productTypeId?: number
+  glCode_Anthology?: string
 }
 
 const props = defineProps<{
@@ -47,16 +73,18 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   addToCart: [product: Product]
+  click: [product: Product]
 }>()
 
-const formattedPrice = computed(() =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(props.product.price)
-)
+const formattedPrice = computed(() => formatCurrency(props.product.price))
 
 function handleAddToCart() {
-  emit('addToCart', props.product)
+  if (props.product.available !== false) {
+    emit('addToCart', props.product)
+  }
+}
+
+function handleClick() {
+  emit('click', props.product)
 }
 </script>

@@ -13,9 +13,12 @@
 
     <!-- Cart Sidebar -->
     <ShopCartSidebar />
+
+    <!-- Toast Notifications -->
+    <UiToastManager />
   </div>
 </template>
 
 <script setup lang="ts">
-// Layout setup
+// Layout setup - ToastManager provides global notifications
 </script>
