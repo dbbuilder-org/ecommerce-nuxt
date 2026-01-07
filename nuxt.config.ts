@@ -73,6 +73,14 @@ export default defineNuxtConfig({
     },
   },
 
+  // PostCSS configuration (Nuxt handles this, not standalone postcss.config.js)
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+
   // Build configuration
   build: {
     transpile: ['vue-toastification'],
