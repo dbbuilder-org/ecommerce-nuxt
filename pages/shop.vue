@@ -1,8 +1,8 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col lg:flex-row gap-8">
-      <!-- Filters Sidebar -->
-      <aside class="lg:w-64 shrink-0">
+  <div class="container mx-auto px-4 py-6 lg:py-8">
+    <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+      <!-- Mobile Filters Drawer -->
+      <ShopMobileFiltersDrawer :active-filter-count="activeFilterCount" class="lg:hidden mb-2">
         <ShopFilters
           :categories="categories"
           :selected-category="selectedCategory"
@@ -17,6 +17,26 @@
           @update:price-max="handlePriceMaxChange"
           @clear-all="handleClearAllFilters"
         />
+      </ShopMobileFiltersDrawer>
+
+      <!-- Desktop Filters Sidebar -->
+      <aside class="hidden lg:block lg:w-64 shrink-0">
+        <div class="sticky top-20">
+          <ShopFilters
+            :categories="categories"
+            :selected-category="selectedCategory"
+            :search="searchQuery"
+            :in-stock="inStockOnly"
+            :price-min="priceMin"
+            :price-max="priceMax"
+            @update:category="handleCategoryChange"
+            @update:search="handleSearchChange"
+            @update:in-stock="handleInStockChange"
+            @update:price-min="handlePriceMinChange"
+            @update:price-max="handlePriceMaxChange"
+            @clear-all="handleClearAllFilters"
+          />
+        </div>
       </aside>
 
       <!-- Products Grid -->
@@ -164,6 +184,16 @@ const filteredProducts = computed(() => {
 // Check if any filters are active
 const hasActiveFilters = computed(() => {
   return searchQuery.value || inStockOnly.value || priceMin.value !== undefined || priceMax.value !== undefined
+})
+
+// Count active filters for mobile badge
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (searchQuery.value) count++
+  if (categorySlug.value) count++
+  if (inStockOnly.value) count++
+  if (priceMin.value !== undefined || priceMax.value !== undefined) count++
+  return count
 })
 
 // Handle filter changes

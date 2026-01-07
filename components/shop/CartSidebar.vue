@@ -51,6 +51,8 @@
                 v-if="item.image"
                 :src="item.image"
                 :alt="item.name"
+                loading="lazy"
+                decoding="async"
                 class="w-full h-full object-cover rounded"
               />
             </div>

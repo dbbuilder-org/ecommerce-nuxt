@@ -311,6 +311,8 @@ onUnmounted(() => {
                           v-if="currentImageUrl && !currentImageIsVideo"
                           :src="currentImageUrl"
                           :alt="product.name"
+                          loading="lazy"
+                          decoding="async"
                           class="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
                           @error="handleImageError"
                         />
@@ -374,6 +376,8 @@ onUnmounted(() => {
                         <img
                           :src="image.imageUrl || image.thumbnailUrl || image.fileName"
                           :alt="`${product.name} - ${image.isVideo ? 'Video' : 'Image'} ${index + 1}`"
+                          loading="lazy"
+                          decoding="async"
                           class="w-full h-full object-cover"
                           @error="handleImageError"
                         />

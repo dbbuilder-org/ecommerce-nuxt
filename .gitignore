@@ -59,15 +59,11 @@ build.ps1
 run.sh
 run.ps1
 dev-server.ps1
-vitest.config.ts
-playwright.config.js
-playwright.config.ts
 postcss.config.js
 .all-contributorsrc
 .codecov.yml
 .nvmrc
 .pre-commit-config.yaml
 src.Tests
-tests
 package-lock.json
 .vercel

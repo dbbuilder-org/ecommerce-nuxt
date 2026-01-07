@@ -16,9 +16,15 @@
 
     <!-- Toast Notifications -->
     <UiToastManager />
+
+    <!-- PWA Install Prompt & Offline Indicator -->
+    <ClientOnly>
+      <PwaInstallPrompt />
+    </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
 // Layout setup - ToastManager provides global notifications
+// PWA Install Prompt is client-only as it depends on browser APIs
 </script>
