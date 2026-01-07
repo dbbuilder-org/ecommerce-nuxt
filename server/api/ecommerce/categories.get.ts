@@ -22,7 +22,19 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    return response
+    // Transform categories to match frontend expected format
+    const data = response as any
+    if (data.categories && Array.isArray(data.categories)) {
+      data.categories = data.categories.map((cat: any) => ({
+        id: cat.categoryId,
+        name: cat.categoryName,
+        slug: createSlug(cat.categoryName),
+        displayOrder: cat.displayOrder,
+        productCount: cat.productCount,
+      }))
+    }
+
+    return data
   } catch (error: any) {
     console.error('Categories API Error:', error?.data || error?.message || error)
     throw createError({
@@ -31,3 +43,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 })
+
+// Helper to create URL-friendly slug from category name
+function createSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
