@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nuxt",
+  "regions": ["iad1"],
+  "env": {
+    "NUXT_PUBLIC_SCHOOL_CODE": "westmoreland",
+    "NUXT_PUBLIC_SCHOOL_NAME": "Westmoreland County Community College",
+    "NUXT_PUBLIC_THEME": "westmoreland"
+  }
+}

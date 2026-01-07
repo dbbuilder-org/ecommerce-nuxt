@@ -5,6 +5,13 @@ export default defineNuxtConfig({
   // Enable SSR for server-side security
   ssr: true,
 
+  // Future compatibility options
+  // Note: compatibilityVersion: 4 causes manifest issues with current Nuxt 3.x
+  // Enable when migrating to Nuxt 4 stable
+  // future: {
+  //   compatibilityVersion: 4,
+  // },
+
   // Runtime configuration - accessible in server and client
   runtimeConfig: {
     // Server-only secrets (never sent to client)
@@ -32,7 +39,70 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@vueuse/nuxt',
     'nuxt-icon',
+    'nuxt-security',
   ],
+
+  // Security configuration (OWASP best practices)
+  security: {
+    headers: {
+      // Content Security Policy
+      contentSecurityPolicy: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.gstatic.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        'img-src': ["'self'", "data:", "https:", "blob:"],
+        'font-src': ["'self'", "https://fonts.gstatic.com"],
+        'connect-src': ["'self'", "https://paymentapi-ecommerce-test-v2.azurewebsites.net", "https://*.schoolvision.io"],
+        'frame-src': ["'self'", "https://www.google.com"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+      },
+      // Strict Transport Security
+      strictTransportSecurity: {
+        maxAge: 31536000,
+        includeSubdomains: true,
+        preload: true,
+      },
+      // Prevent XSS attacks
+      xXSSProtection: '1; mode=block',
+      // Prevent MIME type sniffing
+      xContentTypeOptions: 'nosniff',
+      // Control referrer information
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      // Permissions Policy (formerly Feature Policy)
+      permissionsPolicy: {
+        camera: [],
+        microphone: [],
+        geolocation: [],
+      },
+    },
+    // Rate limiting for API routes
+    rateLimiter: {
+      tokensPerInterval: 150,
+      interval: 300000, // 5 minutes
+    },
+    // Request size limiter
+    requestSizeLimiter: {
+      maxRequestSizeInBytes: 2000000, // 2MB
+      maxUploadFileRequestInBytes: 8000000, // 8MB
+    },
+    // XSS validator for inputs
+    xssValidator: true,
+    // CORS handler
+    corsHandler: {
+      origin: [
+        'https://westmoreland-staging.schoolvision.io',
+        'https://windermere-staging.schoolvision.io',
+        'https://ecommerce-nuxt.vercel.app',
+        'http://localhost:3000',
+      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true,
+    },
+    // Hide X-Powered-By header
+    hidePoweredBy: true,
+  },
 
   // Tailwind CSS
   tailwindcss: {
@@ -54,10 +124,14 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'SchoolVision Ecommerce',
+      htmlAttrs: {
+        lang: 'en',
+      },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'School Ecommerce Store' },
+        { name: 'description', content: 'School Ecommerce Store - Secure Online Shopping' },
+        { name: 'format-detection', content: 'telephone=no' },
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -67,13 +141,31 @@ export default defineNuxtConfig({
 
   // Nitro server configuration
   nitro: {
-    // Server-side API routes
+    // Compression
+    compressPublicAssets: true,
+
+    // Route rules for hybrid rendering
     routeRules: {
-      '/api/**': { cors: true },
+      // API routes - no caching, CORS enabled
+      '/api/**': {
+        cors: true,
+        headers: {
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        },
+      },
+      // Static pages - prerender
+      '/': { prerender: true },
+      // Shop page - ISR with 1 hour cache
+      '/shop': { isr: 3600 },
+      // Payment pages - no cache (dynamic)
+      '/checkout': { ssr: true },
+      '/payment-success': { ssr: true },
+      '/payment-cancelled': { ssr: true },
+      '/payment-error': { ssr: true },
     },
   },
 
-  // PostCSS configuration (Nuxt handles this, not standalone postcss.config.js)
+  // PostCSS configuration
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -83,7 +175,7 @@ export default defineNuxtConfig({
 
   // Build configuration
   build: {
-    transpile: ['vue-toastification'],
+    transpile: [],
   },
 
   // Vite configuration
@@ -91,7 +183,25 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['vue', 'vue-router', 'pinia'],
     },
+    build: {
+      // Chunk splitting for better caching
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor': ['vue', 'vue-router', 'pinia'],
+          },
+        },
+      },
+    },
   },
 
-  compatibilityDate: '2024-12-01',
+  // Experimental features
+  experimental: {
+    // Payload extraction for better hydration
+    payloadExtraction: true,
+    // Tree-shake client-only components
+    treeshakeClientOnly: true,
+  },
+
+  compatibilityDate: '2025-01-01',
 })
