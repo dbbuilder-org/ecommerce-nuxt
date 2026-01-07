@@ -153,11 +153,11 @@ export default defineNuxtConfig({
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         },
       },
-      // Static pages - prerender
-      '/': { prerender: true },
-      // Shop page - ISR with 1 hour cache
-      '/shop': { isr: 3600 },
-      // Payment pages - no cache (dynamic)
+      // Home page - SSR (prerender disabled for now)
+      '/': { ssr: true },
+      // Shop page - SSR with caching
+      '/shop': { ssr: true, swr: 3600 },
+      // Payment pages - SSR (no cache)
       '/checkout': { ssr: true },
       '/payment-success': { ssr: true },
       '/payment-cancelled': { ssr: true },

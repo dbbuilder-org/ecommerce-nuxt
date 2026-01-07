@@ -70,3 +70,4 @@ postcss.config.js
 src.Tests
 tests
 package-lock.json
+.vercel

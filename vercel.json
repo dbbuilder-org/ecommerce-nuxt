@@ -3,7 +3,7 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nuxt",
+  "framework": "nuxtjs",
   "regions": ["iad1"],
   "env": {
     "NUXT_PUBLIC_SCHOOL_CODE": "westmoreland",
