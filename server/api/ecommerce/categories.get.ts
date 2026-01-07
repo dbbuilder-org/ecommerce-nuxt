@@ -5,8 +5,11 @@ export default defineEventHandler(async (event) => {
   const schoolCode = config.public.schoolCode || 'westmoreland'
   const apiBaseUrl = config.paymentApiBaseUrl
 
+  // API URL format: baseUrl/api/ecommerce/categories
+  const apiUrl = `${apiBaseUrl}/api/ecommerce/categories`
+
   try {
-    const response = await $fetch(`${apiBaseUrl}/${schoolCode}/api/ecommerce/categories`, {
+    const response = await $fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -17,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
     return response
   } catch (error: any) {
-    console.error('Categories API Error:', error)
+    console.error('Categories API Error:', error?.data || error?.message || error)
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: 'Failed to fetch categories',

@@ -7,8 +7,11 @@ export default defineEventHandler(async (event) => {
   const schoolCode = config.public.schoolCode || 'westmoreland'
   const apiBaseUrl = config.paymentApiBaseUrl
 
+  // API URL format: baseUrl/api/ecommerce/products (no school prefix for test API)
+  const apiUrl = `${apiBaseUrl}/api/ecommerce/products`
+
   try {
-    const response = await $fetch(`${apiBaseUrl}/${schoolCode}/api/ecommerce/products`, {
+    const response = await $fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
     return response
   } catch (error: any) {
-    console.error('Products API Error:', error)
+    console.error('Products API Error:', error?.data || error?.message || error)
     throw createError({
       statusCode: error.statusCode || 500,
       statusMessage: 'Failed to fetch products',

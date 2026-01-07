@@ -27,8 +27,11 @@ export default defineEventHandler(async (event) => {
   const timestamp = Date.now()
   const signature = createRequestSignature(body, timestamp, config.signingKey)
 
+  // API URL format: baseUrl/api/ecommerce/initiate_payment_v2
+  const apiUrl = `${apiBaseUrl}/api/ecommerce/initiate_payment_v2`
+
   try {
-    const response = await $fetch(`${apiBaseUrl}/${schoolCode}/api/ecommerce/initiate_payment_v2`, {
+    const response = await $fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
