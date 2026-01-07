@@ -46,55 +46,18 @@
       </div>
     </section>
 
-    <!-- Featured Products -->
-    <section class="py-12 bg-gray-50">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold text-gray-900">Featured Products</h2>
-          <NuxtLink
-            to="/shop?category=featured-items"
-            class="text-primary-600 hover:text-primary-700 font-medium text-sm"
-          >
-            View All Featured
-            <Icon name="heroicons:arrow-right" class="ml-1 w-4 h-4 inline" />
-          </NuxtLink>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="productsPending" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div v-for="i in 4" :key="i" class="animate-pulse">
-            <div class="bg-gray-200 aspect-square rounded-lg mb-3" />
-            <div class="bg-gray-200 h-4 rounded w-3/4 mb-2" />
-            <div class="bg-gray-200 h-4 rounded w-1/2" />
-          </div>
-        </div>
-
-        <!-- Products Grid -->
-        <div v-else-if="featuredProducts.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <ShopProductCard
-            v-for="product in featuredProducts"
-            :key="product.id"
-            :product="product"
-          />
-        </div>
-
-        <!-- Empty State -->
-        <div v-else class="text-center py-12">
-          <Icon name="heroicons:shopping-bag" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p class="text-gray-500">No featured products available</p>
-        </div>
-
-        <div class="text-center mt-8">
-          <NuxtLink
-            to="/shop"
-            class="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Browse All Products
-            <Icon name="heroicons:arrow-right" class="ml-2 w-5 h-5" />
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
+    <!-- Featured Products Carousel -->
+    <ShopFeaturedItems
+      :items="featuredProducts"
+      :loading="productsPending"
+      title="Featured"
+      highlight-text="Products"
+      subtitle="Discover our handpicked selection of popular and trending products"
+      view-all-link="/shop?category=featured-items"
+      view-all-text="View All Products"
+      :variant="featuredVariant"
+      @retry="refreshProducts"
+    />
   </div>
 </template>
 
@@ -128,7 +91,13 @@ const displayCategories = computed(() => {
 })
 
 // Fetch featured products (from Featured Items category or first products with images)
-const { data: productsData, pending: productsPending } = await useFetch('/api/ecommerce/products')
+const { data: productsData, pending: productsPending, refresh: refreshProducts } = await useFetch('/api/ecommerce/products')
+
+// Featured section variant based on theme
+const { theme } = useTheme()
+const featuredVariant = computed(() =>
+  theme.value.id === 'windermere' ? 'dark' : 'light'
+)
 
 const featuredProducts = computed(() => {
   const products = (productsData.value as any)?.products || []

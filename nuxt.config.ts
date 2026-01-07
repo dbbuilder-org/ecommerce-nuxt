@@ -182,6 +182,7 @@ export default defineNuxtConfig({
       '/shop': { ssr: true, swr: 3600 },
       // Payment pages - SSR (no cache)
       '/checkout': { ssr: true },
+      '/payment-response': { ssr: true },
       '/payment-success': { ssr: true },
       '/payment-cancelled': { ssr: true },
       '/payment-error': { ssr: true },
