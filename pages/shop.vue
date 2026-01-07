@@ -267,8 +267,22 @@ function handleAddToCart(product: any) {
   toast.addToCart(product.name)
 }
 
-// Page meta
-useHead({
-  title: computed(() => (selectedCategory.value ? selectedCategory.value.name : 'Shop')),
-})
+// Page SEO
+const { setPageSEO, setCategorySEO } = useSEO()
+const config = useRuntimeConfig()
+
+watch(selectedCategory, (category) => {
+  if (category) {
+    setCategorySEO({
+      name: category.name,
+      description: `Browse ${category.name} products at ${config.public.schoolName}`,
+      productCount: filteredProducts.value.length,
+    })
+  } else {
+    setPageSEO({
+      title: 'Shop',
+      description: `Browse all products at ${config.public.schoolName}. Uniforms, supplies, and more.`,
+    })
+  }
+}, { immediate: true })
 </script>

@@ -16,6 +16,49 @@ export interface ThemeColors {
   footerText: string
 }
 
+/**
+ * Theme-specific feature flags
+ * Controls which UI features are enabled per theme
+ */
+export interface ThemeFeatures {
+  // Header features
+  megaMenu: boolean
+  searchBar: boolean
+  scrollEffects: boolean
+
+  // Landing page features
+  quickActions: boolean
+  shopByGrade: boolean
+  videoHero: boolean
+  featuredCollections: boolean
+
+  // UI enhancements
+  glassEffects: boolean
+  softShadows: boolean
+  animatedGradients: boolean
+}
+
+/**
+ * Hero section configuration per theme
+ */
+export interface ThemeHeroConfig {
+  videoSrc?: string
+  imageSrc?: string
+  gradientClass: string
+  overlayClass: string
+  showScrollIndicator: boolean
+  title?: string
+  subtitle?: string
+  ctaText?: string
+  ctaLink?: string
+}
+
+/**
+ * Component override mapping for veneer system
+ * Maps component names to theme-specific override components
+ */
+export type ComponentOverrides = Record<string, string>
+
 export interface ThemeConfig {
   id: string
   name: string
@@ -25,6 +68,38 @@ export interface ThemeConfig {
   colors: ThemeColors
   borderRadius?: string
   fontFamily?: string
+
+  // Extended theme configuration
+  features?: ThemeFeatures
+  hero?: ThemeHeroConfig
+  componentOverrides?: ComponentOverrides
+}
+
+/**
+ * Default feature flags (all disabled for base themes)
+ */
+export const DEFAULT_FEATURES: ThemeFeatures = {
+  megaMenu: false,
+  searchBar: false,
+  scrollEffects: false,
+  quickActions: false,
+  shopByGrade: false,
+  videoHero: false,
+  featuredCollections: false,
+  glassEffects: false,
+  softShadows: false,
+  animatedGradients: false,
+}
+
+/**
+ * Default hero configuration
+ */
+export const DEFAULT_HERO: ThemeHeroConfig = {
+  gradientClass: 'bg-gradient-to-r from-primary-600 to-primary-800',
+  overlayClass: 'bg-black/30',
+  showScrollIndicator: false,
+  ctaText: 'Shop Now',
+  ctaLink: '/shop',
 }
 
 export const CSS_VARIABLE_MAP: Record<keyof ThemeColors, string> = {

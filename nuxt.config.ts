@@ -32,6 +32,13 @@ export default defineNuxtConfig({
       schoolName: 'Westmoreland County Community College',
       recaptchaSiteKey: '6Ld4dqkdAAAAAAHq9rPfvqbcStxmKtoLQ9QI96oK',
       defaultTheme: 'westmoreland',
+
+      // Hero section configuration (theme-customizable)
+      heroVideoSrc: '', // e.g., '/videos/hero-bg.mp4' or external URL
+      heroImageSrc: '', // e.g., '/images/hero-bg.jpg' - fallback if no video
+      heroGradientClass: 'bg-gradient-to-r from-primary-600 to-primary-800', // fallback gradient
+      heroOverlayClass: 'bg-black/30', // overlay opacity
+      heroShowScrollIndicator: 'false',
     }
   },
 
@@ -58,6 +65,7 @@ export default defineNuxtConfig({
         'script-src': ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.gstatic.com"],
         'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         'img-src': ["'self'", "data:", "https:", "blob:"],
+        'media-src': ["'self'", "data:", "https:", "blob:"],
         'font-src': ["'self'", "https://fonts.gstatic.com"],
         'connect-src': ["'self'", "https://paymentapi-ecommerce-test-v2.azurewebsites.net", "https://*.schoolvision.io"],
         'frame-src': ["'self'", "https://www.google.com"],

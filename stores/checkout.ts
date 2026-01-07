@@ -9,6 +9,7 @@ import type {
   ShippingAddress,
   ShippingRate,
   GuestInfo,
+  PromoCode,
 } from '~/types/checkout'
 import {
   DEFAULT_GUEST_INFO,
@@ -41,6 +42,12 @@ export const useCheckoutStore = defineStore('checkout', {
     shippingRatesError: null,
     freeShippingApplied: false,
     freeShippingThreshold: 0,
+
+    // Promo code
+    promoCode: null,
+    promoCodeInput: '',
+    promoCodeLoading: false,
+    promoCodeError: null,
 
     // Processing
     isProcessing: false,
@@ -117,6 +124,48 @@ export const useCheckoutStore = defineStore('checkout', {
         style: 'currency',
         currency: 'USD',
       }).format(cost)
+    },
+
+    // Promo code discount calculation
+    hasPromoCode: (state): boolean => !!state.promoCode,
+
+    // Calculate discount amount based on subtotal
+    calculateDiscount: (state) => (subtotal: number): number => {
+      if (!state.promoCode) return 0
+
+      const promo = state.promoCode
+
+      // Check minimum order amount
+      if (promo.minOrderAmount && subtotal < promo.minOrderAmount) {
+        return 0
+      }
+
+      let discount = 0
+
+      switch (promo.discountType) {
+        case 'percentage':
+          discount = (subtotal * promo.discountValue) / 100
+          break
+        case 'fixed':
+          discount = promo.discountValue
+          break
+        case 'freeShipping':
+          // Free shipping is handled separately
+          return 0
+      }
+
+      // Apply max discount cap if set
+      if (promo.maxDiscount && discount > promo.maxDiscount) {
+        discount = promo.maxDiscount
+      }
+
+      // Ensure discount doesn't exceed subtotal
+      return Math.min(discount, subtotal)
+    },
+
+    // Check if promo gives free shipping
+    promoGivesFreeShipping: (state): boolean => {
+      return state.promoCode?.discountType === 'freeShipping'
     },
   },
 
@@ -264,6 +313,59 @@ export const useCheckoutStore = defineStore('checkout', {
       this.selectedShippingRateId = rateId
     },
 
+    // Promo code actions
+    setPromoCodeInput(code: string) {
+      this.promoCodeInput = code
+      this.promoCodeError = null
+    },
+
+    async applyPromoCode(subtotal: number) {
+      const code = this.promoCodeInput.trim().toUpperCase()
+
+      if (!code) {
+        this.promoCodeError = 'Please enter a promo code'
+        return false
+      }
+
+      this.promoCodeLoading = true
+      this.promoCodeError = null
+
+      try {
+        const response = await $fetch<{
+          success: boolean
+          promoCode?: PromoCode
+          message?: string
+        }>('/api/ecommerce/validate-promo', {
+          method: 'POST',
+          body: {
+            code,
+            subtotal,
+          },
+        })
+
+        if (response.success && response.promoCode) {
+          this.promoCode = response.promoCode
+          this.promoCodeInput = ''
+          return true
+        } else {
+          this.promoCodeError = response.message || 'Invalid promo code'
+          return false
+        }
+      } catch (error: any) {
+        console.error('Error validating promo code:', error)
+        this.promoCodeError = error.data?.message || 'Failed to validate promo code'
+        return false
+      } finally {
+        this.promoCodeLoading = false
+      }
+    },
+
+    removePromoCode() {
+      this.promoCode = null
+      this.promoCodeInput = ''
+      this.promoCodeError = null
+    },
+
     // Processing state
     setProcessing(processing: boolean) {
       this.isProcessing = processing
@@ -285,6 +387,10 @@ export const useCheckoutStore = defineStore('checkout', {
       this.selectedShippingRateId = null
       this.shippingRatesError = null
       this.freeShippingApplied = false
+      this.promoCode = null
+      this.promoCodeInput = ''
+      this.promoCodeLoading = false
+      this.promoCodeError = null
       this.isProcessing = false
       this.checkoutError = null
     },
@@ -303,6 +409,11 @@ export const useCheckoutStore = defineStore('checkout', {
         data.shippingRate = this.selectedShippingRate
       }
 
+      // Include promo code if applied
+      if (this.promoCode) {
+        data.promoCode = this.promoCode
+      }
+
       return data
     },
   },
@@ -316,6 +427,7 @@ export const useCheckoutStore = defineStore('checkout', {
       'selectedShippingRateId',
       'currentStep',
       'completedSteps',
+      'promoCode',
     ],
   },
 })

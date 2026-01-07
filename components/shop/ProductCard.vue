@@ -2,23 +2,30 @@
   <div
     class="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
     @click="handleClick"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
-    <!-- Product Image -->
+    <!-- Product Image/Video -->
     <div class="aspect-square bg-gray-100 relative overflow-hidden">
-      <img
-        v-if="product.image"
-        :src="product.image"
+      <UiProductMedia
+        ref="mediaRef"
+        :src="mediaSrc"
         :alt="product.name"
-        loading="lazy"
-        decoding="async"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        :poster="product.image"
+        :is-video="hasVideo"
+        :autoplay="false"
+        :loop="true"
+        :muted="true"
+        :show-controls="false"
+        :show-play-overlay="false"
+        :show-video-badge="hasVideo"
+        :lazy="true"
+        container-class="w-full h-full"
+        :media-class="hasVideo ? '' : 'group-hover:scale-105 transition-transform duration-300'"
       />
-      <div v-else class="w-full h-full flex items-center justify-center">
-        <Icon name="heroicons:photo" class="w-16 h-16 text-gray-300" />
-      </div>
 
       <!-- Availability Badge -->
-      <div v-if="product.available === false" class="absolute top-2 left-2">
+      <div v-if="product.available === false" class="absolute top-2 left-2 z-10">
         <UiBadge variant="error" size="sm">Out of Stock</UiBadge>
       </div>
 
@@ -26,7 +33,7 @@
       <button
         @click.stop="handleAddToCart"
         :disabled="product.available === false"
-        class="absolute bottom-2 right-2 bg-primary-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="absolute bottom-2 right-2 z-10 bg-primary-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         <Icon name="heroicons:plus" class="w-5 h-5" />
       </button>
@@ -52,6 +59,7 @@ export interface Product {
   price: number
   description?: string
   image?: string
+  video?: string
   available?: boolean
   sizeVariations?: Array<{
     id: number
@@ -78,7 +86,15 @@ const emit = defineEmits<{
   click: [product: Product]
 }>()
 
+const mediaRef = ref<{ playVideo: () => void; pauseVideo: () => void } | null>(null)
+
 const formattedPrice = computed(() => formatCurrency(props.product.price))
+
+// Check if product has video
+const hasVideo = computed(() => !!props.product.video)
+
+// Use video if available, otherwise image
+const mediaSrc = computed(() => props.product.video || props.product.image)
 
 function handleAddToCart() {
   if (props.product.available !== false) {
@@ -88,5 +104,19 @@ function handleAddToCart() {
 
 function handleClick() {
   emit('click', props.product)
+}
+
+// Play video on hover
+function handleMouseEnter() {
+  if (hasVideo.value && mediaRef.value) {
+    mediaRef.value.playVideo()
+  }
+}
+
+// Pause video on mouse leave
+function handleMouseLeave() {
+  if (hasVideo.value && mediaRef.value) {
+    mediaRef.value.pauseVideo()
+  }
 }
 </script>

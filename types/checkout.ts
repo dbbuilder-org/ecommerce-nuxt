@@ -66,6 +66,16 @@ export interface ShippingQuoteResponse {
   message?: string
 }
 
+export interface PromoCode {
+  code: string
+  discountType: 'percentage' | 'fixed' | 'freeShipping'
+  discountValue: number // percentage (0-100) or fixed amount
+  description?: string
+  minOrderAmount?: number
+  maxDiscount?: number
+  expiresAt?: string
+}
+
 export interface GuestInfo {
   firstName: string
   lastName: string
@@ -98,6 +108,12 @@ export interface CheckoutState {
   shippingRatesError: string | null
   freeShippingApplied: boolean
   freeShippingThreshold: number
+
+  // Promo code
+  promoCode: PromoCode | null
+  promoCodeInput: string
+  promoCodeLoading: boolean
+  promoCodeError: string | null
 
   // Processing
   isProcessing: boolean

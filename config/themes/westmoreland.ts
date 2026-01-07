@@ -1,6 +1,18 @@
 // Westmoreland County Community College theme
 
-import type { ThemeConfig } from '~/types/theme'
+import type { ThemeConfig, ThemeFeatures, ThemeHeroConfig } from '~/types/theme'
+import { DEFAULT_FEATURES, DEFAULT_HERO } from '~/types/theme'
+
+const features: ThemeFeatures = {
+  ...DEFAULT_FEATURES,
+  // Westmoreland uses standard features
+}
+
+const hero: ThemeHeroConfig = {
+  ...DEFAULT_HERO,
+  gradientClass: 'bg-gradient-to-r from-[#035891] to-[#024572]',
+  overlayClass: 'bg-black/20',
+}
 
 export const westmorelandTheme: ThemeConfig = {
   id: 'westmoreland',
@@ -22,4 +34,6 @@ export const westmorelandTheme: ThemeConfig = {
     footerText: '#ffffff',
   },
   borderRadius: '0.75rem',
+  features,
+  hero,
 }

@@ -333,12 +333,21 @@
             <CheckoutOrderSummary
               :items="cartStore.items"
               :subtotal="cartStore.subtotal"
-              :shipping-cost="checkoutStore.shippingCost"
+              :shipping-cost="effectiveShippingCost"
               :show-shipping="checkoutStore.deliveryMethod === 'shipping' && checkoutStore.selectedShippingRateId !== null"
               :delivery-info="deliveryInfo"
               :editable="checkoutStore.currentStep === 1"
+              :discount="discountAmount"
+              :promo-code="checkoutStore.promoCode?.code"
               @remove-item="removeItem"
             />
+
+            <!-- Promo Code Input -->
+            <div class="mt-4">
+              <CheckoutPromoCodeInput
+                :subtotal="cartStore.subtotal"
+              />
+            </div>
 
             <!-- Continue Shopping Link -->
             <div class="mt-4 text-center">
@@ -407,9 +416,23 @@ const deliveryInfo = computed(() => {
   return null
 })
 
+// Promo code discount
+const discountAmount = computed(() => {
+  return checkoutStore.calculateDiscount(cartStore.subtotal)
+})
+
+// Effective shipping cost (considering promo code)
+const effectiveShippingCost = computed(() => {
+  if (checkoutStore.promoGivesFreeShipping) {
+    return 0
+  }
+  return checkoutStore.shippingCost
+})
+
 const formattedTotal = computed(() => {
-  const shippingCost = checkoutStore.deliveryMethod === 'shipping' ? checkoutStore.shippingCost : 0
-  return formatCurrency(cartStore.subtotal + shippingCost)
+  const shipping = checkoutStore.deliveryMethod === 'shipping' ? effectiveShippingCost.value : 0
+  const total = cartStore.subtotal - discountAmount.value + shipping
+  return formatCurrency(total)
 })
 
 // Initialize on mount
@@ -528,6 +551,9 @@ async function handleCheckout() {
         pickupLocation: checkoutData.pickupLocation,
         shippingAddress: checkoutData.shippingAddress,
         shippingRate: checkoutData.shippingRate,
+        // Include promo code if applied
+        promoCode: checkoutData.promoCode || null,
+        discount: discountAmount.value,
       },
     })
 

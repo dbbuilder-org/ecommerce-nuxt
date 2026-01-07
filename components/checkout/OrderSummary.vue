@@ -74,6 +74,16 @@
         <span class="font-medium text-gray-900">{{ formatCurrency(subtotal) }}</span>
       </div>
 
+      <!-- Discount -->
+      <div v-if="discount > 0" class="flex justify-between text-sm">
+        <span class="text-gray-600 flex items-center gap-1">
+          <Icon name="heroicons:tag" class="w-4 h-4 text-green-500" />
+          Discount
+          <span v-if="promoCode" class="text-xs text-gray-400">({{ promoCode }})</span>
+        </span>
+        <span class="font-medium text-green-600">-{{ formatCurrency(discount) }}</span>
+      </div>
+
       <!-- Shipping -->
       <div v-if="showShipping" class="flex justify-between text-sm">
         <span class="text-gray-600">Shipping</span>
@@ -152,11 +162,15 @@ const props = withDefaults(defineProps<{
   showShipping?: boolean
   deliveryInfo?: DeliveryInfo | null
   editable?: boolean
+  discount?: number
+  promoCode?: string | null
 }>(), {
   shippingCost: 0,
   showShipping: false,
   deliveryInfo: null,
   editable: false,
+  discount: 0,
+  promoCode: null,
 })
 
 const emit = defineEmits<{
@@ -170,6 +184,7 @@ const itemCount = computed(() => {
 })
 
 const total = computed(() => {
-  return props.subtotal + (props.showShipping ? props.shippingCost : 0)
+  const shipping = props.showShipping ? props.shippingCost : 0
+  return props.subtotal - props.discount + shipping
 })
 </script>

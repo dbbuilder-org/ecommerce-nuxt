@@ -1,25 +1,18 @@
 <template>
   <div>
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-      <div class="container mx-auto px-4 py-16 md:py-24">
-        <div class="max-w-3xl">
-          <h1 class="text-4xl md:text-5xl font-bold mb-4">
-            Welcome to {{ schoolName }}
-          </h1>
-          <p class="text-xl md:text-2xl mb-8 text-primary-100">
-            Shop uniforms, supplies, and more for your school needs.
-          </p>
-          <NuxtLink
-            to="/shop"
-            class="inline-flex items-center px-6 py-3 bg-white text-primary-700 font-semibold rounded-lg hover:bg-primary-50 transition-colors"
-          >
-            Shop Now
-            <Icon name="heroicons:arrow-right" class="ml-2 w-5 h-5" />
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
+    <!-- Hero Section with Video/Image Support -->
+    <UiHeroSection
+      :video-src="heroConfig.videoSrc"
+      :image-src="heroConfig.imageSrc"
+      :gradient-class="heroConfig.gradientClass"
+      :overlay-class="heroConfig.overlayClass"
+      :title="`Welcome to ${schoolName}`"
+      subtitle="Shop uniforms, supplies, and more for your school needs."
+      cta-text="Shop Now"
+      cta-link="/shop"
+      :show-scroll-indicator="heroConfig.showScrollIndicator"
+      container-class="min-h-[400px] md:min-h-[500px] text-white"
+    />
 
     <!-- Quick Actions / Categories -->
     <section class="py-12 bg-white">
@@ -109,6 +102,20 @@
 const config = useRuntimeConfig()
 const schoolName = config.public.schoolName
 
+// Hero section configuration - can be customized per theme
+const heroConfig = computed(() => ({
+  // Video background (takes priority if set)
+  videoSrc: config.public.heroVideoSrc as string | undefined,
+  // Image background (fallback if no video)
+  imageSrc: config.public.heroImageSrc as string | undefined,
+  // Gradient fallback (if no video or image)
+  gradientClass: config.public.heroGradientClass as string || 'bg-gradient-to-r from-primary-600 to-primary-800',
+  // Overlay opacity
+  overlayClass: config.public.heroOverlayClass as string || 'bg-black/30',
+  // Show scroll indicator
+  showScrollIndicator: config.public.heroShowScrollIndicator === 'true',
+}))
+
 // Fetch categories from server API route
 const { data: categoriesData } = await useFetch('/api/ecommerce/categories')
 const categories = computed(() => (categoriesData.value as any)?.categories || [])
@@ -170,8 +177,14 @@ function getCategoryIcon(slug: string): string {
   return iconMap[slug] || 'heroicons:cube'
 }
 
-// Page meta
-useHead({
+// Page SEO
+const { setPageSEO, setOrganizationSchema, setStoreSchema } = useSEO()
+
+setPageSEO({
   title: 'Home',
+  description: `Shop uniforms, supplies, and merchandise at ${schoolName}. Quality school products with secure checkout.`,
 })
+
+setOrganizationSchema()
+setStoreSchema()
 </script>
