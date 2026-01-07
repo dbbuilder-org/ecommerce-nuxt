@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
 
   const schoolCode = config.public.schoolCode || 'westmoreland'
   const apiBaseUrl = config.paymentApiBaseUrl
+  const locationId = 622103005 // Westmoreland location ID
 
   // API URL format: baseUrl/api/ecommerce/categories
   const apiUrl = `${apiBaseUrl}/api/ecommerce/categories`
@@ -15,6 +16,9 @@ export default defineEventHandler(async (event) => {
         'Content-Type': 'application/json',
         'X-API-Key': config.paymentApiSecret,
         'X-School-Code': schoolCode,
+      },
+      query: {
+        locationId,
       },
     })
 

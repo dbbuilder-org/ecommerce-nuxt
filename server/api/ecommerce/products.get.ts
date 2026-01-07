@@ -6,9 +6,10 @@ export default defineEventHandler(async (event) => {
 
   const schoolCode = config.public.schoolCode || 'westmoreland'
   const apiBaseUrl = config.paymentApiBaseUrl
+  const locationId = 622103005 // Westmoreland location ID
 
-  // API URL format: baseUrl/api/ecommerce/products (no school prefix for test API)
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/products`
+  // Use all-categorized endpoint for efficient loading
+  const apiUrl = `${apiBaseUrl}/api/ecommerce/products/all-categorized`
 
   try {
     const response = await $fetch(apiUrl, {
@@ -19,9 +20,8 @@ export default defineEventHandler(async (event) => {
         'X-School-Code': schoolCode,
       },
       query: {
-        categoryId: query.categoryId,
-        page: query.page || 1,
-        limit: query.limit || 50,
+        locationId,
+        availableOnly: false,
       },
     })
 
