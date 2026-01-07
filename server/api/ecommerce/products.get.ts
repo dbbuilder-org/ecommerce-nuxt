@@ -25,7 +25,17 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    return response
+    // Transform products to add image URLs
+    const data = response as any
+    if (data.products && Array.isArray(data.products)) {
+      data.products = data.products.map((product: any) => ({
+        ...product,
+        id: product.productId || product.id,
+        image: getProductImageUrl(product.imageFilename, apiBaseUrl, schoolCode),
+      }))
+    }
+
+    return data
   } catch (error: any) {
     console.error('Products API Error:', error?.data || error?.message || error)
     throw createError({
@@ -34,3 +44,36 @@ export default defineEventHandler(async (event) => {
     })
   }
 })
+
+// Transform imageFilename to full image URL
+// Format: {baseUrl}/{schoolCode}/api/getimage/{filename_without_extension}/{extension}
+function getProductImageUrl(imageFilename: string | undefined, apiBaseUrl: string, schoolCode: string): string | undefined {
+  if (!imageFilename || imageFilename.trim() === '') {
+    return undefined
+  }
+
+  let cleanFilename = imageFilename.trim()
+
+  // Fix common extension issues in the data
+  cleanFilename = cleanFilename.replace(/\/jpg$/, '.jpg')
+  cleanFilename = cleanFilename.replace(/\/j$/, '.jpg')
+  cleanFilename = cleanFilename.replace(/\/jpeg$/, '.jpeg')
+  cleanFilename = cleanFilename.replace(/\/png$/, '.png')
+
+  // Fix truncated .jpg extension
+  if (cleanFilename.endsWith('.j')) {
+    cleanFilename = cleanFilename + 'pg'
+  }
+
+  // Split filename and extension
+  const lastDotIndex = cleanFilename.lastIndexOf('.')
+  if (lastDotIndex > 0) {
+    const name = cleanFilename.substring(0, lastDotIndex)
+    const ext = cleanFilename.substring(lastDotIndex + 1)
+
+    // Use the correct API getimage endpoint
+    return `${apiBaseUrl}/${schoolCode}/api/getimage/${encodeURIComponent(name)}/${ext}`
+  }
+
+  return undefined
+}
