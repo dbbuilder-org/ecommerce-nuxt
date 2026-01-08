@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // API URL for shipping quotes
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/shipping_quotes`
+  // API URL for shipping quotes (multi-tenant: /{schoolCode}/api/ecommerce/shipping/quotes)
+  const apiUrl = `${apiBaseUrl}/${schoolCode}/api/ecommerce/shipping/quotes`
 
   try {
     const response = await $fetch(apiUrl, {
