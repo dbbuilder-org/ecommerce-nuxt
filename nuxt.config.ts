@@ -28,6 +28,9 @@ export default defineNuxtConfig({
     // Public config (available on client)
     // Auto-mapped from NUXT_PUBLIC_* env vars
     public: {
+      // IMPORTANT: schoolCode determines which tenant's data this app accesses.
+      // The paymentApiSecret MUST be configured to only work for this tenant.
+      // See MULTI_TENANT_SECURITY.md for details on securing deployments.
       schoolCode: 'westmoreland',
       schoolName: 'Westmoreland County Community College',
       recaptchaSiteKey: '6Ld4dqkdAAAAAAHq9rPfvqbcStxmKtoLQ9QI96oK',
@@ -39,6 +42,19 @@ export default defineNuxtConfig({
       heroGradientClass: 'bg-gradient-to-r from-primary-600 to-primary-800', // fallback gradient
       heroOverlayClass: 'bg-black/30', // overlay opacity
       heroShowScrollIndicator: 'false',
+
+      // Footer/Contact configuration (optional - overrides veneer config)
+      // These can be set per-deployment via NUXT_PUBLIC_* env vars
+      footerDescription: '', // NUXT_PUBLIC_FOOTER_DESCRIPTION
+      footerAddress: '',     // NUXT_PUBLIC_FOOTER_ADDRESS
+      contactEmail: '',      // NUXT_PUBLIC_CONTACT_EMAIL
+      contactPhone: '',      // NUXT_PUBLIC_CONTACT_PHONE
+      schoolWebsite: '',     // NUXT_PUBLIC_SCHOOL_WEBSITE
+      parentPortal: '',      // NUXT_PUBLIC_PARENT_PORTAL
+      copyrightName: '',     // NUXT_PUBLIC_COPYRIGHT_NAME
+
+      // Google Places API for address autocomplete
+      googlePlacesApiKey: '', // NUXT_PUBLIC_GOOGLE_PLACES_API_KEY
     }
   },
 
