@@ -51,13 +51,15 @@ coverage
 vue.config.js
 capacitor.config.ts
 /scripts
-/docs
 /.archive
 /.github
 build.sh
 build.ps1
 run.sh
 run.ps1
+
+# Keep project docs (was previously ignored for old Vue SPA docs)
+# /docs is now used for project documentation
 dev-server.ps1
 postcss.config.js
 .all-contributorsrc
