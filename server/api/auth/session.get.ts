@@ -1,6 +1,19 @@
 // Session check API route
 // Validates current user session
 
+interface SessionData {
+  user: {
+    id: number
+    email: string
+    name: string
+    firstName?: string
+    lastName?: string
+    role?: string
+    walletId?: number
+  }
+  createdAt: number
+}
+
 export default defineEventHandler(async (event) => {
   const sessionToken = getCookie(event, 'auth_session')
 
@@ -13,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Get session from storage
-    const session = await useStorage('sessions').getItem(sessionToken)
+    const session = await useStorage('sessions').getItem(sessionToken) as SessionData | null
 
     if (!session || !session.user) {
       // Invalid or expired session

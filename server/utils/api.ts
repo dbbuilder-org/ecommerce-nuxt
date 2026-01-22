@@ -14,8 +14,9 @@ export function getApiBaseUrl(event: H3Event): string {
 
 /**
  * Get common headers for API requests (includes secrets)
+ * @deprecated Use getApiHeaders from apiClient.ts instead
  */
-export function getApiHeaders(event: H3Event): Record<string, string> {
+export function getApiHeadersFromEvent(event: H3Event): Record<string, string> {
   const config = useRuntimeConfig()
   const schoolCode = config.public.schoolCode || 'westmoreland'
 

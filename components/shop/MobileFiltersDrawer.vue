@@ -8,7 +8,7 @@
       <Icon name="heroicons:adjustments-horizontal" class="w-5 h-5" />
       Filters
       <span
-        v-if="activeFilterCount > 0"
+        v-if="activeFilterCount && activeFilterCount > 0"
         class="bg-primary-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
       >
         {{ activeFilterCount }}

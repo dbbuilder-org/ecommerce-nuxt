@@ -203,7 +203,7 @@
     </div>
 
     <!-- Order Details Modal -->
-    <UiModal v-model:open="showOrderModal" :title="`Order ${selectedOrder?.orderReference}`" size="lg">
+    <UiModal :show="showOrderModal" :title="`Order ${selectedOrder?.orderReference}`" size="lg" @close="showOrderModal = false">
       <div v-if="selectedOrder" class="space-y-6">
         <!-- Customer Info -->
         <div class="bg-gray-50 rounded-lg p-4">

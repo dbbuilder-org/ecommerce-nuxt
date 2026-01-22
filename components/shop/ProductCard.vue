@@ -33,7 +33,7 @@
       <button
         @click.stop="handleAddToCart"
         :disabled="product.available === false"
-        class="absolute bottom-2 right-2 z-10 bg-primary-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="absolute bottom-2 right-2 z-10 bg-[var(--primary-action-bg)] text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--primary-action-bg-hover)] disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         <Icon name="heroicons:plus" class="w-5 h-5" />
       </button>
@@ -42,7 +42,7 @@
     <!-- Product Info -->
     <div class="p-4">
       <h3 class="font-medium text-gray-900 truncate">{{ product.name }}</h3>
-      <p class="text-primary-600 font-semibold mt-1">{{ formattedPrice }}</p>
+      <p class="text-[var(--button-color)] font-semibold mt-1">{{ formattedPrice }}</p>
       <p v-if="product.description" class="text-sm text-gray-500 mt-1 line-clamp-2">
         {{ product.description }}
       </p>

@@ -198,7 +198,7 @@
     </div>
 
     <!-- Shipping Modal -->
-    <UiModal v-model:open="showShippingModal" title="Add Shipping Details">
+    <UiModal :show="showShippingModal" title="Add Shipping Details" @close="showShippingModal = false">
       <div class="space-y-4">
         <UiFormInput
           v-model="shippingForm.carrier"

@@ -45,6 +45,7 @@ export default defineNuxtConfig({
   // CSS
   css: [
     '~/assets/css/main.css',
+    '~/assets/css/theme.css',
   ],
 
   // Modules
@@ -102,8 +103,8 @@ export default defineNuxtConfig({
       maxRequestSizeInBytes: 2000000, // 2MB
       maxUploadFileRequestInBytes: 8000000, // 8MB
     },
-    // XSS validator for inputs
-    xssValidator: true,
+    // XSS validator for inputs (using default settings)
+    xssValidator: {},
     // CORS handler
     corsHandler: {
       origin: [

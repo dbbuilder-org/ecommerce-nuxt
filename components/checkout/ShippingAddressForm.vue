@@ -44,7 +44,7 @@
       <!-- Address Line 2 -->
       <div class="sm:col-span-2">
         <UiFormInput
-          :model-value="modelValue.addressLine2"
+          :model-value="modelValue.addressLine2 ?? ''"
           @update:model-value="updateField('addressLine2', $event)"
           label="Apartment, suite, etc. (optional)"
           placeholder="Apt 4B"
@@ -89,7 +89,7 @@
 
       <!-- Phone (optional) -->
       <UiFormInput
-        :model-value="modelValue.phone"
+        :model-value="modelValue.phone ?? ''"
         @update:model-value="updateField('phone', $event)"
         label="Phone (optional)"
         placeholder="(555) 123-4567"
@@ -132,13 +132,14 @@ const emit = defineEmits<{
   (e: 'zip-blur'): void
 }>()
 
-function updateField<K extends keyof ShippingAddress>(field: K, value: ShippingAddress[K]) {
-  emit('update:modelValue', { ...props.modelValue, [field]: value })
+function updateField<K extends keyof ShippingAddress>(field: K, value: string | number | undefined) {
+  const stringValue = value !== undefined ? String(value) : ''
+  emit('update:modelValue', { ...props.modelValue, [field]: stringValue })
 }
 
-function handleZipChange(value: string) {
+function handleZipChange(value: string | number) {
   // Format ZIP code (remove non-digits, limit to 5 or 9 digits)
-  const formatted = value.replace(/\D/g, '').slice(0, 9)
+  const formatted = String(value).replace(/\D/g, '').slice(0, 9)
   updateField('zipCode', formatted)
 }
 </script>

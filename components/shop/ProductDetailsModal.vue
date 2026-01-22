@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatCurrency } from '~/utils/currency'
+import { generateCartItemId } from '~/stores/cart'
 
 // Types
 export interface ProductImage {
@@ -57,19 +58,21 @@ const selectedVariant = ref<ProductVariant | null>(null)
 const productImages = ref<ProductImage[]>([])
 const selectedImageIndex = ref(0)
 const isLoadingImages = ref(false)
+const isImageZoomed = ref(false)
 
 // Computed
 const currentImageUrl = computed(() => {
-  if (productImages.value.length > 0 && productImages.value[selectedImageIndex.value]) {
-    const img = productImages.value[selectedImageIndex.value]
+  const img = productImages.value[selectedImageIndex.value]
+  if (productImages.value.length > 0 && img) {
     return img.imageUrl || img.thumbnailUrl || img.fileName || ''
   }
   return props.product?.image || ''
 })
 
 const currentImageIsVideo = computed(() => {
-  if (productImages.value.length > 0 && productImages.value[selectedImageIndex.value]) {
-    return productImages.value[selectedImageIndex.value].isVideo === true
+  const img = productImages.value[selectedImageIndex.value]
+  if (productImages.value.length > 0 && img) {
+    return img.isVideo === true
   }
   return props.product?.isVideo === true
 })
@@ -80,7 +83,9 @@ const hasVariations = computed(() => {
   if (variations.length > 1) return true
   if (variations.length === 1) {
     const variation = variations[0]
-    return variation.price !== props.product.price || variation.size !== undefined
+    if (variation) {
+      return variation.price !== props.product.price || variation.size !== undefined
+    }
   }
   return false
 })
@@ -98,10 +103,25 @@ const currentPrice = computed(() => {
 })
 
 const isAddToCartEnabled = computed(() => {
-  if (!props.product?.available) return false
-  if (hasVariations.value && !selectedVariant.value) return false
-  if (hasVariations.value && selectedVariant.value && selectedVariant.value.available === false) return false
-  return true
+  // For products WITH variations, check variant availability (not parent product)
+  if (hasVariations.value) {
+    if (!selectedVariant.value) return false
+    // Treat undefined as available (only block if explicitly false)
+    return selectedVariant.value.available !== false
+  }
+  // For products WITHOUT variations, check the product's own availability
+  return props.product?.available !== false
+})
+
+// Determines if product should show as "In Stock" - for sized products, check if ANY variant is available
+const isProductAvailable = computed(() => {
+  if (hasVariations.value) {
+    // For sized products, available if at least one variant is available
+    const variants = props.product?.sizeVariations || props.product?.variants || []
+    return variants.some(v => v.available !== false)
+  }
+  // For regular products, use the product's availability
+  return props.product?.available !== false
 })
 
 const totalPrice = computed(() => currentPrice.value * quantity.value)
@@ -169,6 +189,36 @@ function nextImage() {
   }
 }
 
+// Fullscreen image zoom
+function toggleImageZoom() {
+  if (currentImageIsVideo.value) return
+  isImageZoomed.value = !isImageZoomed.value
+  if (isImageZoomed.value) {
+    document.addEventListener('keydown', handleZoomKeydown)
+  } else {
+    document.removeEventListener('keydown', handleZoomKeydown)
+  }
+}
+
+function closeZoom() {
+  isImageZoomed.value = false
+  document.removeEventListener('keydown', handleZoomKeydown)
+}
+
+function handleZoomKeydown(event: KeyboardEvent) {
+  switch (event.key) {
+    case 'Escape':
+      closeZoom()
+      break
+    case 'ArrowLeft':
+      previousImage()
+      break
+    case 'ArrowRight':
+      nextImage()
+      break
+  }
+}
+
 function increaseQuantity() {
   if (quantity.value < 99) {
     quantity.value++
@@ -195,14 +245,20 @@ function addToCart() {
     ? `${selectedVariant.value.originalName || selectedVariant.value.name || props.product.name}`
     : props.product.name
 
-  // Add to cart
+  // Determine IDs - variants use their own ID as productSizeId
+  const productId = props.product.id
+  const productSizeId = selectedVariant.value?.id
+
+  // Add to cart with proper CartItem structure
   cartStore.addItem(
     {
-      id: productToAdd.id,
+      id: generateCartItemId(productId, productSizeId),
+      productId,
+      productSizeId,
       name: productName,
       price: currentPrice.value,
       image: props.product.image,
-      variant: selectedVariant.value?.size,
+      size: selectedVariant.value?.size,
     },
     quantity.value
   )
@@ -251,6 +307,7 @@ watch(
 // Cleanup
 onUnmounted(() => {
   document.body.style.overflow = ''
+  document.removeEventListener('keydown', handleZoomKeydown)
 })
 </script>
 
@@ -357,6 +414,18 @@ onUnmounted(() => {
                         >
                           {{ selectedImageIndex + 1 }} / {{ productImages.length }}
                         </div>
+
+                        <!-- Zoom Button (for images only) -->
+                        <button
+                          v-if="currentImageUrl && !currentImageIsVideo"
+                          @click.stop="toggleImageZoom"
+                          class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+                          aria-label="Zoom image"
+                        >
+                          <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
 
@@ -405,10 +474,10 @@ onUnmounted(() => {
                       {{ product.name }}
                     </h1>
 
-                    <!-- Availability Badge -->
+                    <!-- Availability Badge - For sized products, show availability based on variants -->
                     <div class="mb-6">
                       <UiBadge
-                        v-if="product.available !== false"
+                        v-if="isProductAvailable"
                         variant="success"
                         size="md"
                       >
@@ -468,9 +537,9 @@ onUnmounted(() => {
                           <span class="text-gray-600">Availability:</span>
                           <span
                             class="font-medium"
-                            :class="product.available !== false ? 'text-green-600' : 'text-red-600'"
+                            :class="isProductAvailable ? 'text-green-600' : 'text-red-600'"
                           >
-                            {{ product.available !== false ? 'In Stock' : 'Out of Stock' }}
+                            {{ isProductAvailable ? 'In Stock' : 'Out of Stock' }}
                           </span>
                         </div>
                       </div>
@@ -478,8 +547,8 @@ onUnmounted(() => {
 
                     <!-- Size Selection (if product has variants) -->
                     <div v-if="hasVariations" class="mb-6">
-                      <label class="text-sm font-medium text-gray-700 mb-3 block">Size:</label>
-                      <div class="grid grid-cols-3 gap-2">
+                      <label class="text-sm font-medium text-gray-700 mb-3 block">Select Size:</label>
+                      <div class="flex flex-wrap gap-2">
                         <UiButton
                           v-for="variant in sizeVariations"
                           :key="`${variant.productId || variant.id}-${variant.size}`"
@@ -487,7 +556,7 @@ onUnmounted(() => {
                           :disabled="variant.available === false"
                           :variant="selectedVariant && selectedVariant.id === variant.id ? 'primary' : 'outline'"
                           size="sm"
-                          class="relative"
+                          class="relative min-w-[60px]"
                         >
                           {{ variant.size }}
                           <span
@@ -498,9 +567,6 @@ onUnmounted(() => {
                           </span>
                         </UiButton>
                       </div>
-                      <p v-if="selectedVariant" class="text-sm text-gray-600 mt-2">
-                        Selected: {{ selectedVariant.size }} - {{ formatCurrency(totalPrice) }}
-                      </p>
                     </div>
 
                     <!-- Quantity Selector -->
@@ -549,7 +615,7 @@ onUnmounted(() => {
                         size="lg"
                         class="w-full shadow-lg"
                       >
-                        <span v-if="product.available === false">Out of Stock</span>
+                        <span v-if="!isProductAvailable">Out of Stock</span>
                         <span v-else-if="hasVariations && !selectedVariant">Select a Size</span>
                         <span v-else>Add to Cart - {{ formatCurrency(totalPrice) }}</span>
                       </UiButton>
@@ -599,6 +665,76 @@ onUnmounted(() => {
               </div>
             </div>
           </Transition>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Fullscreen Image Zoom Overlay -->
+    <Transition
+      enter-active-class="duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isImageZoomed && currentImageUrl && !currentImageIsVideo"
+        class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95"
+        @click="closeZoom"
+      >
+        <!-- Close Button -->
+        <button
+          @click.stop="closeZoom"
+          class="absolute top-4 right-4 z-10 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+          aria-label="Close zoom"
+        >
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Zoomed Image -->
+        <img
+          :src="currentImageUrl"
+          :alt="product?.name"
+          class="max-w-[95vw] max-h-[95vh] object-contain"
+          @click.stop
+        />
+
+        <!-- Navigation Arrows (when multiple images) -->
+        <template v-if="productImages.length > 1">
+          <button
+            @click.stop="previousImage"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+            aria-label="Previous image"
+          >
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            @click.stop="nextImage"
+            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+            aria-label="Next image"
+          >
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </template>
+
+        <!-- Image Counter -->
+        <div
+          v-if="productImages.length > 1"
+          class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/50 rounded-full text-white text-sm"
+        >
+          {{ selectedImageIndex + 1 }} / {{ productImages.length }}
+        </div>
+
+        <!-- Keyboard hints -->
+        <div class="absolute bottom-4 right-4 text-white/50 text-xs hidden sm:block">
+          ESC to close • ← → to navigate
         </div>
       </div>
     </Transition>

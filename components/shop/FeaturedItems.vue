@@ -76,10 +76,12 @@
               enableCarousel ? '' : 'md:flex-shrink'
             ]"
           >
-            <ShopProductCard
+            <ShopFeaturedItemCard
               :product="item"
+              :index="index"
               @click="$emit('item-click', item)"
               @add-to-cart="$emit('add-to-cart', item)"
+              @quick-view="$emit('item-click', item)"
             />
           </div>
         </div>
@@ -169,11 +171,11 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(true)
 const currentIndex = ref(0)
 
-// Theme-based classes
+// Theme-based classes using CSS variables
 const sectionClass = computed(() =>
   props.variant === 'dark'
-    ? 'bg-[#02233c] text-white'
-    : 'bg-gradient-to-br from-gray-50 to-primary-50'
+    ? 'bg-[var(--header-color)] text-white'
+    : 'bg-gradient-to-br from-gray-50 to-gray-100'
 )
 
 const headerClass = computed(() =>
@@ -185,13 +187,13 @@ const subtitleClass = computed(() =>
 )
 
 const highlightClass = computed(() =>
-  props.variant === 'dark' ? 'text-[#9bd3dd]' : 'text-primary-600'
+  props.variant === 'dark' ? 'text-[var(--button-color)]' : 'text-[var(--button-color)]'
 )
 
 const viewAllButtonClass = computed(() =>
   props.variant === 'dark'
-    ? 'bg-[#9bd3dd] text-[#02233c] hover:bg-[#b5e0e7]'
-    : 'bg-primary-600 text-white hover:bg-primary-700'
+    ? 'bg-[var(--button-color)] text-[var(--header-color)] hover:bg-[var(--button-hover)]'
+    : 'bg-[var(--primary-action-bg)] text-white hover:bg-[var(--primary-action-bg-hover)]'
 )
 
 // Scroll navigation

@@ -165,7 +165,7 @@ const hasVideo = computed(() => !!props.videoSrc)
 // Get MIME type for video
 const videoMimeType = computed(() => {
   if (!props.videoSrc) return 'video/mp4'
-  const cleanUrl = props.videoSrc.split('?')[0].split('#')[0]
+  const cleanUrl = props.videoSrc.split('?')[0]?.split('#')[0] ?? props.videoSrc
   const lastDot = cleanUrl.lastIndexOf('.')
   if (lastDot === -1) return 'video/mp4'
   const ext = cleanUrl.substring(lastDot + 1).toLowerCase()

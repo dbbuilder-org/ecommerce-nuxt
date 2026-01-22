@@ -83,8 +83,8 @@ describe('Toast Store', () => {
 
       expect(store.toasts.length).toBe(5)
       // Should have toasts 3-7 (oldest ones removed)
-      expect(store.toasts[0].title).toBe('Toast 3')
-      expect(store.toasts[4].title).toBe('Toast 7')
+      expect(store.toasts[0]?.title).toBe('Toast 3')
+      expect(store.toasts[4]?.title).toBe('Toast 7')
     })
 
     it('auto-removes toast after duration when autoClose is true', () => {

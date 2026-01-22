@@ -1,6 +1,20 @@
 // Register API route - Server-side user registration
 // Handles new user registration against the ecommerce API
 
+interface RegisterApiResponse {
+  Successful: boolean
+  Message?: string
+  user?: {
+    id?: number
+    userId?: number
+    email?: string
+    role?: string
+  }
+  wallet?: {
+    id?: number
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { email, password, firstName, lastName } = body
@@ -33,7 +47,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call the ecommerce API for registration
-    const response = await $fetch(`${config.ecommerceApiBase}/api/wallet/register`, {
+    const response = await $fetch<RegisterApiResponse>(`${config.ecommerceApiBase}/api/wallet/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

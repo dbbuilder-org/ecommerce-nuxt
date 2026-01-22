@@ -22,10 +22,10 @@ describe('Cart Store', () => {
 
       expect(store.itemCount).toBe(0)
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
       expect(store.itemCount).toBe(1)
 
-      store.addItem({ id: 2, name: 'Item 2', price: 20 }, 3)
+      store.addItem({ id: '2', productId: 2, name: 'Item 2', price: 20 }, 3)
       expect(store.itemCount).toBe(4)
     })
 
@@ -34,10 +34,10 @@ describe('Cart Store', () => {
 
       expect(store.subtotal).toBe(0)
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
       expect(store.subtotal).toBe(10)
 
-      store.addItem({ id: 2, name: 'Item 2', price: 25 }, 2)
+      store.addItem({ id: '2', productId: 2, name: 'Item 2', price: 25 }, 2)
       expect(store.subtotal).toBe(60) // 10 + (25 * 2)
     })
 
@@ -46,7 +46,7 @@ describe('Cart Store', () => {
 
       expect(store.isEmpty).toBe(true)
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
       expect(store.isEmpty).toBe(false)
 
       store.clearCart()
@@ -58,7 +58,7 @@ describe('Cart Store', () => {
 
       expect(store.formattedSubtotal).toBe('$0.00')
 
-      store.addItem({ id: 1, name: 'Item 1', price: 1234.56 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 1234.56 })
       expect(store.formattedSubtotal).toBe('$1,234.56')
     })
   })
@@ -67,11 +67,12 @@ describe('Cart Store', () => {
     it('adds a new item to cart', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Test Product', price: 29.99 })
+      store.addItem({ id: '1', productId: 1, name: 'Test Product', price: 29.99 })
 
       expect(store.items.length).toBe(1)
       expect(store.items[0]).toEqual({
-        id: 1,
+        id: '1',
+        productId: 1,
         name: 'Test Product',
         price: 29.99,
         quantity: 1,
@@ -81,28 +82,28 @@ describe('Cart Store', () => {
     it('adds item with custom quantity', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Test Product', price: 29.99 }, 5)
+      store.addItem({ id: '1', productId: 1, name: 'Test Product', price: 29.99 }, 5)
 
-      expect(store.items[0].quantity).toBe(5)
+      expect(store.items[0]?.quantity).toBe(5)
     })
 
     it('increments quantity for existing item', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Test Product', price: 29.99 })
-      store.addItem({ id: 1, name: 'Test Product', price: 29.99 })
+      store.addItem({ id: '1', productId: 1, name: 'Test Product', price: 29.99 })
+      store.addItem({ id: '1', productId: 1, name: 'Test Product', price: 29.99 })
 
       expect(store.items.length).toBe(1)
-      expect(store.items[0].quantity).toBe(2)
+      expect(store.items[0]?.quantity).toBe(2)
     })
 
     it('respects maxQuantity when incrementing', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Limited Item', price: 50, maxQuantity: 3 }, 2)
-      store.addItem({ id: 1, name: 'Limited Item', price: 50, maxQuantity: 3 }, 5)
+      store.addItem({ id: '1', productId: 1, name: 'Limited Item', price: 50, maxQuantity: 3 }, 2)
+      store.addItem({ id: '1', productId: 1, name: 'Limited Item', price: 50, maxQuantity: 3 }, 5)
 
-      expect(store.items[0].quantity).toBe(3) // capped at maxQuantity
+      expect(store.items[0]?.quantity).toBe(3) // capped at maxQuantity
     })
 
     it('opens cart sidebar when item added', () => {
@@ -110,7 +111,7 @@ describe('Cart Store', () => {
 
       expect(store.isOpen).toBe(false)
 
-      store.addItem({ id: 1, name: 'Test Product', price: 29.99 })
+      store.addItem({ id: '1', productId: 1, name: 'Test Product', price: 29.99 })
 
       expect(store.isOpen).toBe(true)
     })
@@ -119,15 +120,16 @@ describe('Cart Store', () => {
       const store = useCartStore()
 
       store.addItem({
-        id: 1,
+        id: '1',
+        productId: 1,
         name: 'Test Product',
         price: 29.99,
         image: '/images/product.jpg',
-        variant: 'Large',
+        size: 'Large',
       })
 
-      expect(store.items[0].image).toBe('/images/product.jpg')
-      expect(store.items[0].variant).toBe('Large')
+      expect(store.items[0]?.image).toBe('/images/product.jpg')
+      expect(store.items[0]?.size).toBe('Large')
     })
   })
 
@@ -135,21 +137,21 @@ describe('Cart Store', () => {
     it('removes item by id', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.addItem({ id: 2, name: 'Item 2', price: 20 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '2', productId: 2, name: 'Item 2', price: 20 })
 
-      store.removeItem(1)
+      store.removeItem('1')
 
       expect(store.items.length).toBe(1)
-      expect(store.items[0].id).toBe(2)
+      expect(store.items[0]?.id).toBe('2')
     })
 
     it('does nothing if item not found', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
 
-      store.removeItem(999)
+      store.removeItem('999')
 
       expect(store.items.length).toBe(1)
     })
@@ -159,17 +161,17 @@ describe('Cart Store', () => {
     it('updates quantity for existing item', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.updateQuantity(1, 5)
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.updateQuantity('1', 5)
 
-      expect(store.items[0].quantity).toBe(5)
+      expect(store.items[0]?.quantity).toBe(5)
     })
 
     it('removes item when quantity set to 0', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.updateQuantity(1, 0)
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.updateQuantity('1', 0)
 
       expect(store.items.length).toBe(0)
     })
@@ -177,8 +179,8 @@ describe('Cart Store', () => {
     it('removes item when quantity set to negative', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.updateQuantity(1, -1)
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.updateQuantity('1', -1)
 
       expect(store.items.length).toBe(0)
     })
@@ -186,20 +188,20 @@ describe('Cart Store', () => {
     it('respects maxQuantity when updating', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Limited Item', price: 50, maxQuantity: 3 })
-      store.updateQuantity(1, 10)
+      store.addItem({ id: '1', productId: 1, name: 'Limited Item', price: 50, maxQuantity: 3 })
+      store.updateQuantity('1', 10)
 
-      expect(store.items[0].quantity).toBe(3)
+      expect(store.items[0]?.quantity).toBe(3)
     })
 
     it('does nothing for non-existent item', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.updateQuantity(999, 5)
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.updateQuantity('999', 5)
 
       expect(store.items.length).toBe(1)
-      expect(store.items[0].quantity).toBe(1)
+      expect(store.items[0]?.quantity).toBe(1)
     })
   })
 
@@ -207,9 +209,9 @@ describe('Cart Store', () => {
     it('removes all items', () => {
       const store = useCartStore()
 
-      store.addItem({ id: 1, name: 'Item 1', price: 10 })
-      store.addItem({ id: 2, name: 'Item 2', price: 20 })
-      store.addItem({ id: 3, name: 'Item 3', price: 30 })
+      store.addItem({ id: '1', productId: 1, name: 'Item 1', price: 10 })
+      store.addItem({ id: '2', productId: 2, name: 'Item 2', price: 20 })
+      store.addItem({ id: '3', productId: 3, name: 'Item 3', price: 30 })
 
       store.clearCart()
 

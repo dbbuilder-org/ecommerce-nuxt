@@ -1,17 +1,31 @@
 // Theme registry - all available themes
 // Supports veneer system with component overrides per theme
 
-import type { ThemeConfig, ThemeFeatures, ThemeHeroConfig } from '~/types/theme'
-import { DEFAULT_THEME_COLORS, DEFAULT_FEATURES, DEFAULT_HERO } from '~/types/theme'
+import type { ThemeConfig, ThemeFeatures, ThemeHeroConfig, ThemeColors } from '~/types/theme'
+import {
+  DEFAULT_THEME_COLORS,
+  DEFAULT_FEATURES,
+  DEFAULT_HERO,
+  DEFAULT_SHADOWS,
+  DEFAULT_GRADIENTS,
+  DEFAULT_GLASS,
+  DEFAULT_RADII,
+  DEFAULT_TRANSITIONS,
+} from '~/types/theme'
 import { westmorelandTheme } from './westmoreland'
 import { windermereTheme } from './windermere'
 
-// Default theme
+// Default theme - uses all defaults from types/theme.ts
 export const defaultTheme: ThemeConfig = {
   id: 'default',
   name: 'Default',
   schoolName: 'School Bookstore',
   colors: DEFAULT_THEME_COLORS,
+  shadows: DEFAULT_SHADOWS,
+  gradients: DEFAULT_GRADIENTS,
+  glass: DEFAULT_GLASS,
+  radii: DEFAULT_RADII,
+  transitions: DEFAULT_TRANSITIONS,
   features: DEFAULT_FEATURES,
   hero: DEFAULT_HERO,
 }
@@ -25,7 +39,8 @@ export const themes: Record<string, ThemeConfig> = {
 
 // Get theme by ID
 export function getTheme(themeId: string): ThemeConfig {
-  return themes[themeId] || themes.default
+  const theme = themes[themeId]
+  return theme ?? defaultTheme
 }
 
 // Get all available themes

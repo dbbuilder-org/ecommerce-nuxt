@@ -64,7 +64,7 @@ function handleBackToLogin() {
 </script>
 
 <template>
-  <UiModal :is-open="isOpen" size="sm" @close="handleClose">
+  <UiModal :show="isOpen" size="sm" @close="handleClose">
     <template #header>
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">

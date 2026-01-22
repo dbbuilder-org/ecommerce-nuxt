@@ -292,6 +292,37 @@
               </template>
             </UiCard>
 
+            <!-- Validation Message (when requirements not met) with Clickable Links -->
+            <div
+              v-if="!checkoutStore.canProceedToPayment && !checkoutStore.isProcessing"
+              class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800"
+            >
+              <div class="flex items-center">
+                <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 mr-2 flex-shrink-0" />
+                <span v-if="checkoutStore.deliveryMethod === 'shipping' && !checkoutStore.selectedShippingRateId && !checkoutStore.isShippingAddressComplete">
+                  <a href="#" @click.prevent="scrollToShippingAddress" class="underline font-medium hover:text-amber-900">
+                    Enter your shipping address
+                  </a> to calculate shipping rates
+                </span>
+                <span v-else-if="checkoutStore.deliveryMethod === 'shipping' && !checkoutStore.selectedShippingRateId && checkoutStore.isShippingAddressComplete">
+                  <a href="#" @click.prevent="scrollToShippingRates" class="underline font-medium hover:text-amber-900">
+                    Click "Get Shipping Rates"
+                  </a> to select a shipping method
+                </span>
+                <span v-else-if="checkoutStore.deliveryMethod === 'pickup' && !checkoutStore.selectedPickupLocationId">
+                  Please select a pickup location to continue
+                </span>
+                <span v-else-if="!checkoutStore.isContactComplete">
+                  <a href="#" @click.prevent="navigateToStep(1)" class="underline font-medium hover:text-amber-900">
+                    Complete your contact information
+                  </a> to continue
+                </span>
+                <span v-else>
+                  Please complete all required fields to continue
+                </span>
+              </div>
+            </div>
+
             <!-- Navigation Buttons -->
             <div class="flex flex-col sm:flex-row gap-3">
               <UiButton
@@ -511,7 +542,7 @@ async function fetchShippingQuotes() {
 
   await checkoutStore.fetchShippingQuotes(
     cartStore.items.map(item => ({
-      id: item.id,
+      id: item.productId,
       name: item.name,
       price: item.price,
       quantity: item.quantity,
@@ -520,14 +551,91 @@ async function fetchShippingQuotes() {
 }
 
 // Cart actions
-function removeItem(itemId: number) {
-  cartStore.removeItem(itemId)
+function removeItem(itemId: string | number) {
+  // Cart store expects string IDs
+  cartStore.removeItem(String(itemId))
   toast.info('Item removed', 'Item has been removed from your cart')
 }
 
-// Checkout
+// Scroll helper methods for validation message links
+function scrollToShippingAddress() {
+  // Navigate to step 2 if not already there
+  if (checkoutStore.currentStep !== 2) {
+    navigateToStep(2)
+  }
+
+  // Give time for render, then scroll to shipping address section
+  setTimeout(() => {
+    const shippingSection = document.querySelector('[data-testid="shipping-address-section"]')
+      || document.querySelector('.shipping-address-form')
+    if (shippingSection) {
+      shippingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Focus on first input field
+      setTimeout(() => {
+        const firstInput = shippingSection.querySelector('input') as HTMLInputElement
+        if (firstInput) firstInput.focus()
+      }, 500)
+    }
+  }, 100)
+}
+
+function scrollToShippingRates() {
+  // Navigate to step 2 if not already there
+  if (checkoutStore.currentStep !== 2) {
+    navigateToStep(2)
+  }
+
+  // Give time for render, then scroll to shipping rates section
+  setTimeout(() => {
+    const ratesSection = document.querySelector('[data-testid="shipping-rates-section"]')
+      || document.querySelector('[data-testid="get-shipping-rates-btn"]')
+    if (ratesSection) {
+      ratesSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Highlight the Get Shipping Rates button
+      const btn = document.querySelector('[data-testid="get-shipping-rates-btn"]')
+      if (btn) {
+        btn.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2')
+        setTimeout(() => {
+          btn.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2')
+        }, 3000)
+      }
+    }
+  }, 100)
+}
+
+// Checkout with order confirmation
 async function handleCheckout() {
   if (checkoutStore.isProcessing) return
+
+  // Calculate totals for confirmation message
+  const shipping = checkoutStore.deliveryMethod === 'shipping' ? effectiveShippingCost.value : 0
+  const subtotal = cartStore.subtotal
+  const discount = discountAmount.value
+  const total = subtotal - discount + shipping
+
+  // Build confirmation message
+  const deliveryText = checkoutStore.deliveryMethod === 'pickup'
+    ? `Pickup: ${checkoutStore.selectedPickupLocation?.name || 'Selected location'}`
+    : `Shipping: ${formatCurrency(shipping)}`
+
+  let confirmMessage = `Order Summary:\n\n`
+  confirmMessage += `Items: ${cartStore.itemCount}\n`
+  confirmMessage += `Subtotal: ${formatCurrency(subtotal)}\n`
+  if (discount > 0) {
+    confirmMessage += `Discount: -${formatCurrency(discount)}\n`
+  }
+  confirmMessage += `${deliveryText}\n`
+  confirmMessage += `─────────────────\n`
+  confirmMessage += `Total: ${formatCurrency(total)}\n\n`
+  confirmMessage += `Click OK to proceed to secure payment, or Cancel to review your order.`
+
+  // Show confirmation dialog
+  const userConfirmed = confirm(confirmMessage)
+
+  if (!userConfirmed) {
+    // User cancelled - don't proceed
+    return
+  }
 
   checkoutStore.setProcessing(true)
   checkoutStore.setCheckoutError(null)
@@ -537,12 +645,12 @@ async function handleCheckout() {
     const checkoutData = checkoutStore.getCheckoutData()
 
     // Call server-side API route
-    const response = await $fetch('/api/ecommerce/initiate-payment', {
+    const response = await $fetch<{ success: boolean; paymentUrl?: string; message?: string }>('/api/ecommerce/initiate-payment', {
       method: 'POST',
       body: {
         guestInfo: checkoutData.guestInfo,
         cartItems: cartStore.items.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           name: item.name,
           price: item.price,
           quantity: item.quantity,

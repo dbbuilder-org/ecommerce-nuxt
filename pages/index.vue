@@ -12,7 +12,19 @@
       cta-link="/shop"
       :show-scroll-indicator="heroConfig.showScrollIndicator"
       container-class="min-h-[400px] md:min-h-[500px] text-white"
-    />
+    >
+      <!-- Shop by Category Quick Links -->
+      <div v-if="displayCategories.length > 0" class="flex flex-wrap gap-3 justify-start items-center mt-6">
+        <NuxtLink
+          v-for="category in displayCategories.slice(0, 6)"
+          :key="category.id"
+          :to="`/shop?category=${getCategorySlug(category.name)}`"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white hover:text-primary-700 backdrop-blur-sm transition-all duration-200"
+        >
+          Shop {{ category.name }}
+        </NuxtLink>
+      </div>
+    </UiHeroSection>
 
     <!-- Quick Actions / Categories -->
     <section class="py-12 bg-white">
@@ -118,6 +130,37 @@ const featuredProducts = computed(() => {
   const shuffled = [...productsWithImages].sort(() => 0.5 - Math.random())
   return shuffled.slice(0, 8)
 })
+
+// Convert category name to URL-friendly slug for quick links
+function getCategorySlug(categoryName: string): string {
+  const name = categoryName.toLowerCase()
+
+  // Map common category names to standardized slugs
+  if (name.includes('uniform') || name.includes('apparel')) {
+    return 'uniforms'
+  } else if (name.includes('supplies')) {
+    return 'supplies'
+  } else if (name.includes('technology') || name.includes('equipment')) {
+    return 'technology'
+  } else if (name.includes('gift')) {
+    return 'gift-cards'
+  } else if (name.includes('featured')) {
+    return 'featured'
+  } else if (name.includes('spirit')) {
+    return 'spirit'
+  } else if (name.includes('pe') || name.includes('physical education') || name.includes('athletic')) {
+    return 'pe'
+  } else if (name.includes('cold') || name.includes('outerwear') || name.includes('jacket')) {
+    return 'outerwear'
+  } else if (name.includes('seasonal')) {
+    return 'seasonal'
+  } else if (name.includes('course') || name.includes('material')) {
+    return 'course-materials'
+  }
+
+  // Default: create slug from name (lowercase, replace spaces/special chars with hyphens)
+  return name.replace(/[&\s]+/g, '-').replace(/--+/g, '-').replace(/^-|-$/g, '')
+}
 
 // Category styling helpers
 function getCategoryColorClass(slug: string): string {

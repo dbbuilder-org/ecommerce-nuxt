@@ -120,11 +120,17 @@ export interface CheckoutState {
   checkoutError: string | null
 }
 
-export const CHECKOUT_STEPS = [
+export interface CheckoutStep {
+  id: number
+  name: string
+  icon: string
+}
+
+export const CHECKOUT_STEPS: CheckoutStep[] = [
   { id: 1, name: 'Contact', icon: 'heroicons:user' },
   { id: 2, name: 'Delivery', icon: 'heroicons:truck' },
   { id: 3, name: 'Payment', icon: 'heroicons:credit-card' },
-] as const
+]
 
 export const DEFAULT_GUEST_INFO: GuestInfo = {
   firstName: '',

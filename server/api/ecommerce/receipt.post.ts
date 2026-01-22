@@ -1,5 +1,25 @@
 // Server-side API route for fetching receipt data from secure token
-export default defineEventHandler(async (event) => {
+
+interface ReceiptData {
+  transactionId?: string | null
+  amount?: string | null
+  taxAmount?: string | null
+  netAmount?: string | null
+  ticketId?: string | null
+  lastFour?: string | null
+  cardType?: string | null
+  approvalNumber?: string | null
+  transactionDate?: string | null
+  status?: string | null
+}
+
+interface ReceiptResponse {
+  success: boolean
+  message?: string
+  receipt: ReceiptData | null
+}
+
+export default defineEventHandler(async (event): Promise<ReceiptResponse> => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
@@ -17,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call backend API to validate token and get receipt data
-    const response = await $fetch(`${apiBaseUrl}/api/ecommerce/receipt`, {
+    const response = await $fetch<ReceiptResponse>(`${apiBaseUrl}/api/ecommerce/receipt`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

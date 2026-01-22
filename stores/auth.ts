@@ -22,6 +22,31 @@ export interface AuthState {
   sessionToken: string | null
 }
 
+// API Response Types
+interface LoginResponse {
+  success: boolean
+  message?: string
+  user?: User
+  token?: string
+}
+
+interface RegisterResponse {
+  success: boolean
+  message?: string
+  user?: User
+  token?: string
+}
+
+interface SessionResponse {
+  authenticated: boolean
+  user?: User
+}
+
+interface PasswordResponse {
+  success: boolean
+  message?: string
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
@@ -36,8 +61,10 @@ export const useAuthStore = defineStore('auth', {
     userInitials: (state) => {
       if (!state.user?.name) return 'G'
       const parts = state.user.name.split(' ')
-      if (parts.length >= 2) {
-        return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+      if (parts.length >= 2 && parts[0] && parts[1]) {
+        const firstInitial = parts[0][0] || ''
+        const lastInitial = parts[1][0] || ''
+        return `${firstInitial}${lastInitial}`.toUpperCase()
       }
       return state.user.name.substring(0, 2).toUpperCase()
     },
@@ -68,7 +95,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true
 
       try {
-        const response = await $fetch('/api/auth/login', {
+        const response = await $fetch<LoginResponse>('/api/auth/login', {
           method: 'POST',
           body: { email, password },
         })
@@ -100,7 +127,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true
 
       try {
-        const response = await $fetch('/api/auth/register', {
+        const response = await $fetch<RegisterResponse>('/api/auth/register', {
           method: 'POST',
           body: data,
         })
@@ -141,7 +168,7 @@ export const useAuthStore = defineStore('auth', {
 
     async checkSession(): Promise<boolean> {
       try {
-        const response = await $fetch('/api/auth/session')
+        const response = await $fetch<SessionResponse>('/api/auth/session')
         if (response.authenticated && response.user) {
           this.setUser(response.user)
           return true
@@ -156,7 +183,7 @@ export const useAuthStore = defineStore('auth', {
 
     async forgotPassword(email: string): Promise<{ success: boolean; message?: string }> {
       try {
-        const response = await $fetch('/api/auth/forgot-password', {
+        const response = await $fetch<PasswordResponse>('/api/auth/forgot-password', {
           method: 'POST',
           body: { email },
         })
@@ -174,7 +201,7 @@ export const useAuthStore = defineStore('auth', {
       password: string
     ): Promise<{ success: boolean; message?: string }> {
       try {
-        const response = await $fetch('/api/auth/reset-password', {
+        const response = await $fetch<PasswordResponse>('/api/auth/reset-password', {
           method: 'POST',
           body: { token, password },
         })

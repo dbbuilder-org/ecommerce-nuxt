@@ -1,5 +1,21 @@
 // Server-side API route for validating promo codes
-export default defineEventHandler(async (event) => {
+
+interface PromoCode {
+  code: string
+  discountType: 'percentage' | 'fixed' | 'freeShipping'
+  discountValue: number
+  description?: string
+  minOrderAmount?: number
+  maxDiscount?: number
+}
+
+interface PromoCodeResponse {
+  success: boolean
+  message?: string
+  promoCode?: PromoCode
+}
+
+export default defineEventHandler(async (event): Promise<PromoCodeResponse> => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
@@ -17,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call backend API to validate promo code
-    const response = await $fetch(`${apiBaseUrl}/api/ecommerce/validate-promo`, {
+    const response = await $fetch<PromoCodeResponse>(`${apiBaseUrl}/api/ecommerce/validate-promo`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

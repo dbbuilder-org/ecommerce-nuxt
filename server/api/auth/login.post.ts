@@ -1,6 +1,23 @@
 // Login API route - Server-side authentication
 // Handles user login against the ecommerce API
 
+interface LoginApiResponse {
+  Successful: boolean
+  Message?: string
+  user?: {
+    id?: number
+    userId?: number
+    email?: string
+    name?: string
+    firstName?: string
+    lastName?: string
+    role?: string
+  }
+  wallet?: {
+    id?: number
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { email, password } = body
@@ -16,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call the ecommerce API for authentication
-    const response = await $fetch(`${config.ecommerceApiBase}/api/wallet/loginuserlimit`, {
+    const response = await $fetch<LoginApiResponse>(`${config.ecommerceApiBase}/api/wallet/loginuserlimit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

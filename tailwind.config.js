@@ -1,8 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-    "./public/index.html",
+    "./components/**/*.{vue,js,ts,jsx,tsx}",
+    "./layouts/**/*.{vue,js,ts,jsx,tsx}",
+    "./pages/**/*.{vue,js,ts,jsx,tsx}",
+    "./composables/**/*.{js,ts}",
+    "./plugins/**/*.{js,ts}",
+    "./app.vue",
+    "./error.vue",
   ],
   theme: {
     container: {
@@ -94,6 +99,23 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Windermere V2 colors
+        navy: {
+          dark: '#0a1628',
+          DEFAULT: '#132238',
+          light: '#1a2d47',
+        },
+        teal: {
+          300: '#5eead4',
+          400: '#00d4c4',
+          DEFAULT: '#00b4a6',
+          500: '#00a094',
+          600: '#0d9488',
+        },
+        coral: {
+          light: '#ff8c5a',
+          DEFAULT: '#ff6b35',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -128,6 +150,18 @@ module.exports = {
           "0%": { opacity: "1" },
           "100%": { opacity: "0" },
         },
+        "pulse-once": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+        },
+        "slide-up": {
+          "0%": { transform: "translateY(0)", opacity: "1" },
+          "100%": { transform: "translateY(-100%)", opacity: "0" },
+        },
+        "slide-down": {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -136,6 +170,9 @@ module.exports = {
         "slide-out": "slide-out 0.3s ease-in",
         "fade-in": "fade-in 0.2s ease-out",
         "fade-out": "fade-out 0.2s ease-in",
+        "pulse-once": "pulse-once 0.4s ease-in-out",
+        "slide-up": "slide-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
       },
     },
   },

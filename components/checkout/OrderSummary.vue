@@ -143,7 +143,8 @@
 import { formatCurrency } from '~/utils/currency'
 
 interface CartItem {
-  id: number
+  id: string | number
+  productId?: number
   name: string
   price: number
   quantity: number
@@ -174,7 +175,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  (e: 'remove-item', itemId: number): void
+  (e: 'remove-item', itemId: string | number): void
 }>()
 
 const showItems = ref(false)

@@ -242,7 +242,17 @@ export const useCheckoutStore = defineStore('checkout', {
 
     // Shipping address
     setShippingAddress(address: Partial<ShippingAddress>) {
+      const oldAddress = JSON.stringify(this.shippingAddress)
       this.shippingAddress = { ...this.shippingAddress, ...address }
+      const newAddress = JSON.stringify(this.shippingAddress)
+
+      // Clear stale shipping rates when address changes
+      // Both shipping and tax are address-dependent, so they must be recalculated
+      if (oldAddress !== newAddress && this.shippingRates.length > 0) {
+        this.shippingRates = []
+        this.selectedShippingRateId = null
+        this.shippingRatesError = null
+      }
     },
 
     // Shipping rates
@@ -259,6 +269,28 @@ export const useCheckoutStore = defineStore('checkout', {
 
       try {
         const addr = this.shippingAddress
+
+        // Defensive validation: filter out invalid items and ensure proper types
+        const validatedItems = cartItems
+          .filter(item => item && item.id)  // Filter out invalid items
+          .map(item => ({
+            // Use productId (database ID) - ensure numeric type
+            productId: parseInt(String(item.id), 10) || 0,
+            productName: item.name || 'Unknown Product',
+            quantity: parseInt(String(item.quantity), 10) || 1,
+            unitPrice: parseFloat(String(item.price)) || 0,
+            requiresShipping: true,
+          }))
+          .filter(item => item.productId > 0)  // Ensure valid productId
+
+        // Validate request has items before calling API
+        if (validatedItems.length === 0) {
+          console.warn('⚠️ No valid items in cart for shipping quote')
+          this.shippingRatesError = 'No shippable items in cart'
+          this.shippingRatesLoading = false
+          return
+        }
+
         const response = await $fetch<{
           Successful: boolean
           rates: ShippingRate[]
@@ -278,14 +310,8 @@ export const useCheckoutStore = defineStore('checkout', {
               country: addr.country || 'US',
               isResidential: true,
             },
-            items: cartItems.map(item => ({
-              productId: item.id,
-              productName: item.name,
-              quantity: item.quantity,
-              unitPrice: item.price,
-              requiresShipping: true,
-            })),
-            orderSubtotal: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+            items: validatedItems,
+            orderSubtotal: validatedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
           },
         })
 
@@ -296,7 +322,10 @@ export const useCheckoutStore = defineStore('checkout', {
 
           // Auto-select first rate if available
           if (response.rates.length > 0) {
-            this.selectedShippingRateId = response.rates[0].rateId
+            const firstRate = response.rates[0]
+            if (firstRate) {
+              this.selectedShippingRateId = firstRate.rateId
+            }
           }
         } else {
           this.shippingRatesError = response.message || 'Failed to get shipping quotes'

@@ -3,14 +3,29 @@
 
 import { defineStore } from 'pinia'
 
+/**
+ * CartItem aligns with API PaymentItemRequest
+ * Uses productId and productSizeId for backend compatibility
+ */
 export interface CartItem {
-  id: number
+  id: string // Client-generated unique ID (productId-productSizeId)
+  productId: number
+  productSizeId?: number // For size variants
   name: string
+  description?: string
+  size?: string // Display name for variant
   price: number
   quantity: number
   image?: string
-  variant?: string
   maxQuantity?: number
+  available?: boolean
+}
+
+/**
+ * Helper to generate cart item ID
+ */
+export function generateCartItemId(productId: number, productSizeId?: number): string {
+  return productSizeId ? `${productId}-${productSizeId}` : `${productId}`
 }
 
 export interface CartState {
@@ -42,7 +57,11 @@ export const useCartStore = defineStore('cart', {
   },
 
   actions: {
+    /**
+     * Add item to cart - handles both simple products and variants
+     */
     addItem(product: Omit<CartItem, 'quantity'>, quantity = 1) {
+      // Find existing item by unique ID (productId-productSizeId combination)
       const existingItem = this.items.find((item) => item.id === product.id)
 
       if (existingItem) {
@@ -63,24 +82,53 @@ export const useCartStore = defineStore('cart', {
       this.isOpen = true
     },
 
-    removeItem(productId: number) {
-      const index = this.items.findIndex((item) => item.id === productId)
+    /**
+     * Remove item by unique ID (string format: productId-productSizeId)
+     */
+    removeItem(itemId: string) {
+      const index = this.items.findIndex((item) => item.id === itemId)
       if (index > -1) {
         this.items.splice(index, 1)
       }
     },
 
-    updateQuantity(productId: number, quantity: number) {
-      const item = this.items.find((item) => item.id === productId)
+    /**
+     * Remove item by product ID and optional size ID
+     */
+    removeProduct(productId: number, productSizeId?: number) {
+      const itemId = generateCartItemId(productId, productSizeId)
+      this.removeItem(itemId)
+    },
+
+    /**
+     * Update quantity by unique ID
+     */
+    updateQuantity(itemId: string, quantity: number) {
+      const item = this.items.find((item) => item.id === itemId)
       if (item) {
         if (quantity <= 0) {
-          this.removeItem(productId)
+          this.removeItem(itemId)
         } else if (item.maxQuantity && quantity > item.maxQuantity) {
           item.quantity = item.maxQuantity
         } else {
           item.quantity = quantity
         }
       }
+    },
+
+    /**
+     * Get item by unique ID
+     */
+    getItem(itemId: string): CartItem | undefined {
+      return this.items.find((item) => item.id === itemId)
+    },
+
+    /**
+     * Check if product (with optional size) is in cart
+     */
+    hasProduct(productId: number, productSizeId?: number): boolean {
+      const itemId = generateCartItemId(productId, productSizeId)
+      return this.items.some((item) => item.id === itemId)
     },
 
     clearCart() {

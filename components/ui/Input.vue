@@ -12,9 +12,9 @@ const inputVariants = cva(
         success: 'border border-green-500 focus:border-green-600 focus:ring-2 focus:ring-green-500/20',
       },
       size: {
-        sm: 'px-3 py-2.5 text-base rounded-xl min-h-[44px]',
-        md: 'px-4 py-3 text-base rounded-2xl min-h-[44px]',
-        lg: 'px-6 py-4 text-base sm:text-lg rounded-2xl min-h-[48px]',
+        sm: 'px-3 py-2.5 text-base rounded-lg min-h-[44px]',
+        md: 'px-4 py-3 text-base rounded-lg min-h-[44px]',
+        lg: 'px-5 py-3.5 text-base sm:text-lg rounded-xl min-h-[48px]',
       },
       hasIcon: {
         true: '',

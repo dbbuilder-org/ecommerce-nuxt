@@ -192,7 +192,7 @@ function isVideoExtension(url?: string): boolean {
 
 // Extract file extension from URL
 function getFileExtension(url: string): string {
-  const cleanUrl = url.split('?')[0].split('#')[0]
+  const cleanUrl = url.split('?')[0]?.split('#')[0] ?? url
   const lastDot = cleanUrl.lastIndexOf('.')
   if (lastDot === -1) return ''
   return cleanUrl.substring(lastDot + 1)

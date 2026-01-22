@@ -94,7 +94,7 @@ watch(
 </script>
 
 <template>
-  <UiModal :is-open="isOpen" size="md" @close="handleClose">
+  <UiModal :show="isOpen" size="md" @close="handleClose">
     <template #header>
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">

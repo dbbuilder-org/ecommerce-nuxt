@@ -39,15 +39,15 @@
             <div v-if="transactionData.netAmount && transactionData.taxAmount" class="space-y-3">
               <div class="flex justify-between items-center">
                 <span class="text-gray-600 text-sm">Subtotal:</span>
-                <span class="font-semibold text-gray-900">${{ parseFloat(transactionData.netAmount).toFixed(2) }}</span>
+                <span class="font-semibold text-gray-900">${{ parseFloat(transactionData.netAmount || '0').toFixed(2) }}</span>
               </div>
               <div class="flex justify-between items-center pb-3 border-b border-gray-300">
                 <span class="text-gray-600 text-sm">Tax:</span>
-                <span class="font-semibold text-gray-900">${{ parseFloat(transactionData.taxAmount).toFixed(2) }}</span>
+                <span class="font-semibold text-gray-900">${{ parseFloat(transactionData.taxAmount || '0').toFixed(2) }}</span>
               </div>
               <div class="flex justify-between items-center pt-2">
                 <span class="text-gray-800 font-bold text-lg">Total Paid:</span>
-                <span class="text-2xl font-bold text-green-600">${{ parseFloat(transactionData.amount).toFixed(2) }}</span>
+                <span class="text-2xl font-bold text-green-600">${{ parseFloat(transactionData.amount || '0').toFixed(2) }}</span>
               </div>
             </div>
 
@@ -215,15 +215,43 @@ async function loadReceiptData() {
   }
 }
 
+interface ReceiptResponse {
+  success: boolean
+  message?: string
+  receipt: {
+    transactionId?: string | null
+    amount?: string | null
+    taxAmount?: string | null
+    netAmount?: string | null
+    ticketId?: string | null
+    lastFour?: string | null
+    cardType?: string | null
+    approvalNumber?: string | null
+    transactionDate?: string | null
+    status?: string | null
+  } | null
+}
+
 async function loadReceiptFromToken(token: string) {
   try {
-    const response = await $fetch('/api/ecommerce/receipt', {
+    const response = await $fetch<ReceiptResponse>('/api/ecommerce/receipt', {
       method: 'POST',
       body: { receiptToken: token },
     })
 
     if (response.success && response.receipt) {
-      transactionData.value = response.receipt
+      transactionData.value = {
+        transactionId: response.receipt.transactionId ?? null,
+        amount: response.receipt.amount ?? null,
+        taxAmount: response.receipt.taxAmount ?? null,
+        netAmount: response.receipt.netAmount ?? null,
+        ticketId: response.receipt.ticketId ?? null,
+        lastFour: response.receipt.lastFour ?? null,
+        cardType: response.receipt.cardType ?? null,
+        approvalNumber: response.receipt.approvalNumber ?? null,
+        transactionDate: response.receipt.transactionDate ?? null,
+        status: response.receipt.status ?? null,
+      }
     } else {
       parseUrlParameters()
     }

@@ -1,5 +1,22 @@
 // Server-side API route for fetching user orders
-export default defineEventHandler(async (event) => {
+
+interface SessionData {
+  user: {
+    id: number
+    email: string
+    name: string
+    walletId?: number
+  }
+  createdAt: number
+}
+
+interface OrdersResponse {
+  success: boolean
+  orders: any[]
+  message?: string
+}
+
+export default defineEventHandler(async (event): Promise<OrdersResponse> => {
   const config = useRuntimeConfig()
 
   // Get session cookie to identify user
@@ -13,7 +30,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get user from session
-  const session = await useStorage('sessions').getItem(sessionToken)
+  const session = await useStorage('sessions').getItem(sessionToken) as SessionData | null
   if (!session || !session.user) {
     throw createError({
       statusCode: 401,
@@ -26,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call backend API to get user orders
-    const response = await $fetch(`${apiBaseUrl}/api/ecommerce/orders`, {
+    const response = await $fetch<OrdersResponse>(`${apiBaseUrl}/api/ecommerce/orders`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

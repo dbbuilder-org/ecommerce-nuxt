@@ -1,36 +1,56 @@
 /**
  * Theme composable - provides access to theme configuration and veneer system
+ * Wraps the theme store for reactive access to theme state
  */
-import { getTheme } from '~/config/themes'
-import type { ThemeConfig, ThemeFeatures, ThemeHeroConfig } from '~/types/theme'
-import { DEFAULT_FEATURES, DEFAULT_HERO } from '~/types/theme'
+import { useThemeStore } from '~/stores/theme'
+import type { ThemeConfig, ThemeFeatures, ThemeHeroConfig, ThemeColors } from '~/types/theme'
+import { DEFAULT_HERO } from '~/types/theme'
 
 export function useTheme() {
+  const themeStore = useThemeStore()
   const config = useRuntimeConfig()
-  const themeId = config.public.defaultTheme || 'westmoreland'
+
+  // Initialize theme on first use
+  if (!themeStore.isInitialized) {
+    themeStore.initializeTheme()
+  }
+
+  // Get the current theme ID
+  const themeId = computed(() => themeStore.currentThemeId)
 
   // Get the current theme configuration
-  const theme = computed<ThemeConfig>(() => getTheme(themeId))
+  const theme = computed<ThemeConfig>(() => themeStore.currentTheme)
 
-  // Get theme features with defaults
-  const features = computed<ThemeFeatures>(() => ({
-    ...DEFAULT_FEATURES,
-    ...theme.value.features,
-  }))
+  // Get theme colors
+  const colors = computed<ThemeColors>(() => themeStore.colors)
+
+  // Get theme features (with defaults merged in store)
+  const features = computed<ThemeFeatures>(() => themeStore.features)
 
   // Get hero configuration with defaults
   const heroConfig = computed<ThemeHeroConfig>(() => ({
     ...DEFAULT_HERO,
     ...theme.value.hero,
     // Override with runtime config if set
-    videoSrc: config.public.heroVideoSrc as string || theme.value.hero?.videoSrc,
-    imageSrc: config.public.heroImageSrc as string || theme.value.hero?.imageSrc,
+    videoSrc: (config.public.heroVideoSrc as string) || theme.value.hero?.videoSrc,
+    imageSrc: (config.public.heroImageSrc as string) || theme.value.hero?.imageSrc,
   }))
 
   // Check if a feature is enabled
   function hasFeature(feature: keyof ThemeFeatures): boolean {
-    return features.value[feature] === true
+    return themeStore.hasFeature(feature)
   }
+
+  // Convenience getters for common features
+  const hasMegaMenu = computed(() => themeStore.hasMegaMenu)
+  const hasSearchBar = computed(() => themeStore.hasSearchBar)
+  const hasScrollEffects = computed(() => themeStore.hasScrollEffects)
+  const hasQuickActions = computed(() => themeStore.hasQuickActions)
+  const isShippingEnabled = computed(() => themeStore.isShippingEnabled)
+  const isPickupEnabled = computed(() => themeStore.isPickupEnabled)
+  const hasFeaturedItems = computed(() => features.value.featuredItems)
+  const hasShopByGrade = computed(() => features.value.shopByGrade)
+  const hasShopByCollection = computed(() => features.value.shopByCollection)
 
   // Get component override name (veneer system)
   function getComponentOverride(componentName: string): string | null {
@@ -42,42 +62,42 @@ export function useTheme() {
     return !!theme.value.componentOverrides?.[componentName]
   }
 
-  // Apply CSS variables to document
+  // Apply CSS variables to document (delegates to store)
   function applyCSSVariables() {
-    if (import.meta.server) return
-
-    const root = document.documentElement
-    const colors = theme.value.colors
-
-    // Apply color variables
-    Object.entries(colors).forEach(([key, value]) => {
-      root.style.setProperty(`--theme-${kebabCase(key)}`, value)
-    })
-
-    // Apply border radius
-    if (theme.value.borderRadius) {
-      root.style.setProperty('--theme-border-radius', theme.value.borderRadius)
-    }
-
-    // Apply font family
-    if (theme.value.fontFamily) {
-      root.style.setProperty('--theme-font-family', theme.value.fontFamily)
-    }
+    themeStore.applyCSSVariables()
   }
 
-  // Helper: convert camelCase to kebab-case
-  function kebabCase(str: string): string {
-    return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+  // Set theme (delegates to store)
+  function setTheme(newThemeId: string) {
+    themeStore.setTheme(newThemeId)
   }
 
   return {
+    // Core
     theme,
     themeId,
+    colors,
     features,
     heroConfig,
+
+    // Feature checks
     hasFeature,
+    hasMegaMenu,
+    hasSearchBar,
+    hasScrollEffects,
+    hasQuickActions,
+    isShippingEnabled,
+    isPickupEnabled,
+    hasFeaturedItems,
+    hasShopByGrade,
+    hasShopByCollection,
+
+    // Veneer system
     getComponentOverride,
     hasComponentOverride,
+
+    // Actions
     applyCSSVariables,
+    setTheme,
   }
 }

@@ -1,5 +1,11 @@
 // Server-side API route for emailing receipt
-export default defineEventHandler(async (event) => {
+
+interface EmailReceiptResponse {
+  success: boolean
+  message: string
+}
+
+export default defineEventHandler(async (event): Promise<EmailReceiptResponse> => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
@@ -33,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Call backend API to send receipt email
-    const response = await $fetch(`${apiBaseUrl}/api/ecommerce/email-receipt`, {
+    await $fetch<{ success: boolean }>(`${apiBaseUrl}/api/ecommerce/email-receipt`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +55,6 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       message: `Receipt sent to ${email}`,
-      ...response,
     }
   } catch (error: any) {
     console.error('Email Receipt API Error:', error?.data || error?.message || error)
