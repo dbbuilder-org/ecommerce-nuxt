@@ -42,13 +42,24 @@
           :key="category.id"
           @click="emit('update:category', category)"
           :class="[
-            'block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+            'flex items-center justify-between w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
             selectedCategory?.id === category.id
               ? 'bg-primary-100 text-primary-700'
               : 'text-gray-600 hover:bg-gray-100',
           ]"
         >
-          {{ category.name }}
+          <span>{{ category.name }}</span>
+          <span
+            v-if="category.productCount !== undefined"
+            :class="[
+              'text-xs px-1.5 py-0.5 rounded-full',
+              selectedCategory?.id === category.id
+                ? 'bg-primary-200 text-primary-800'
+                : 'bg-gray-100 text-gray-500',
+            ]"
+          >
+            {{ category.productCount }}
+          </span>
         </button>
       </div>
     </div>
@@ -122,6 +133,7 @@ interface Category {
   id: number
   name: string
   slug: string
+  productCount?: number
 }
 
 const props = defineProps<{
