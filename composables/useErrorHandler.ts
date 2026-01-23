@@ -15,10 +15,13 @@ interface ErrorContext {
   operation?: string
   silent?: boolean
   fallbackMessage?: string
+  redirectOnUnauthorized?: boolean // Auto-redirect to login on 401
 }
 
 export function useErrorHandler() {
   const toast = useToast()
+  const authStore = useAuthStore()
+  const router = useRouter()
 
   /**
    * Parse error into user-friendly message
@@ -91,26 +94,55 @@ export function useErrorHandler() {
   ): string {
     const message = context.fallbackMessage || parseError(error)
     const operation = context.operation || 'Operation'
+    const statusCode = getErrorCode(error)
 
     // Log error for debugging
     if (import.meta.dev) {
       console.error(`[${operation}] Error:`, error)
     }
 
+    // Handle session expiry (401) - redirect to login
+    if (statusCode === 401 && context.redirectOnUnauthorized !== false) {
+      authStore.logout()
+      if (import.meta.client) {
+        router.push('/login?expired=true')
+      }
+    }
+
     // Show toast notification unless silent
     if (!context.silent) {
-      const statusCode = getErrorCode(error)
-
       if (statusCode === 401) {
-        toast.warning('Authentication Required', message)
+        toast.warning('Session Expired', 'Please sign in again to continue.')
+      } else if (statusCode === 403) {
+        toast.error('Access Denied', message)
       } else if (statusCode >= 500) {
         toast.error('Server Error', message)
+      } else if (isNetworkError(error)) {
+        toast.error('Connection Error', 'Please check your internet connection.')
       } else {
         toast.error(`${operation} Failed`, message)
       }
     }
 
     return message
+  }
+
+  /**
+   * Check if error is a network/connection error
+   */
+  function isNetworkError(error: unknown): boolean {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return true
+    }
+    // Check for failed to fetch or network error messages
+    if (typeof error === 'object' && error !== null) {
+      const err = error as any
+      const msg = (err.message || '').toLowerCase()
+      if (msg.includes('network') || msg.includes('fetch') || msg.includes('connection')) {
+        return true
+      }
+    }
+    return false
   }
 
   /**
@@ -183,5 +215,6 @@ export function useErrorHandler() {
     isErrorCode,
     isAuthError,
     isServerError,
+    isNetworkError,
   }
 }

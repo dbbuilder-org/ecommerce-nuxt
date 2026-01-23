@@ -68,7 +68,7 @@
       view-all-link="/shop?category=featured-items"
       view-all-text="View All Products"
       :variant="featuredVariant"
-      @retry="refreshProducts"
+      @retry="refreshFeatured"
     />
   </div>
 </template>
@@ -102,8 +102,8 @@ const displayCategories = computed(() => {
     .slice(0, 8)
 })
 
-// Fetch featured products (from Featured Items category or first products with images)
-const { data: productsData, pending: productsPending, refresh: refreshProducts } = await useFetch('/api/ecommerce/products')
+// Fetch featured products from dedicated API endpoint (database-driven)
+const { data: featuredData, pending: featuredPending, error: featuredError, refresh: refreshFeatured } = await useFetch('/api/ecommerce/products/featured')
 
 // Featured section variant based on theme
 const { theme } = useTheme()
@@ -112,24 +112,14 @@ const featuredVariant = computed(() =>
 )
 
 const featuredProducts = computed(() => {
-  const products = (productsData.value as any)?.products || []
+  const data = featuredData.value as { success?: boolean; products?: any[] } | null
+  if (!data?.success) return []
 
-  // Try to get products from "Featured Items" category first
-  const featuredCategoryProducts = products.filter(
-    (p: any) => p.categoryName === 'Featured Items' || p.categoryId === 124
-  )
-
-  if (featuredCategoryProducts.length >= 4) {
-    return featuredCategoryProducts.slice(0, 8)
-  }
-
-  // Fallback: Get products with images, prioritize variety
-  const productsWithImages = products.filter((p: any) => p.image)
-
-  // Shuffle and take first 8 for variety
-  const shuffled = [...productsWithImages].sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, 8)
+  // Return up to 8 featured products
+  return (data.products || []).slice(0, 8)
 })
+
+const productsPending = featuredPending
 
 // Convert category name to URL-friendly slug for quick links
 function getCategorySlug(categoryName: string): string {
