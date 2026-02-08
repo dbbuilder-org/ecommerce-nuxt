@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: ecommerce-nuxt
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    branch: main
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # API Configuration - points to the .NET 10 API
+      - key: NUXT_PAYMENT_API_BASE_URL
+        sync: false
+      - key: NUXT_ECOMMERCE_API_BASE
+        sync: false
+      - key: NUXT_PAYMENT_API_SECRET
+        sync: false
+      - key: NUXT_ECOMMERCE_API_KEY
+        sync: false
+      - key: NUXT_SIGNING_KEY
+        sync: false
+      # Public configuration
+      - key: NUXT_PUBLIC_SCHOOL_CODE
+        sync: false
+      - key: NUXT_PUBLIC_THEME
+        sync: false
+      # Optional: Google Maps for address autocomplete
+      - key: NUXT_PUBLIC_GOOGLE_MAPS_KEY
+        sync: false
