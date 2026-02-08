@@ -1,24 +1,20 @@
 // Server-side API route for fetching app configuration
 // Provides feature flags and school-specific settings
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.ecommerceApiBase || config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
 
-  // API URL for config
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/config`
+  // API URL for config: baseUrl/{tenant}/api/ecommerce/config
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'config')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || config.paymentApiSecret || '',
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
-        schoolCode,
+        schoolCode: clientConfig.tenant,
       },
     })
 
@@ -29,10 +25,10 @@ export default defineEventHandler(async (event) => {
       return {
         Successful: true,
         config: {
-          schoolCode: data.schoolCode || schoolCode,
+          schoolCode: data.schoolCode || clientConfig.tenant,
           schoolName: data.schoolName || config.public.schoolName || 'School Bookstore',
           locationId: data.locationId || 0,
-          apiBaseUrl: apiBaseUrl,
+          apiBaseUrl: clientConfig.baseUrl,
           features: data.features || getDefaultFeatures(),
           freeShippingThreshold: data.freeShippingThreshold || 75,
         },

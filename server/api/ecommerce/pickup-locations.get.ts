@@ -1,24 +1,19 @@
 // Server-side API route for fetching pickup locations
 // Proxies to the ecommerce API with secure credentials
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.ecommerceApiBase || config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
 
-  // API URL for pickup locations
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/pickup_locations`
+  // API URL for pickup locations: baseUrl/{tenant}/api/ecommerce/pickup_locations
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'pickup_locations')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || config.paymentApiSecret || '',
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
-        schoolCode,
+        schoolCode: clientConfig.tenant,
       },
     })
 

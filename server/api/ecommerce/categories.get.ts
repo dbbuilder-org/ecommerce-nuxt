@@ -1,22 +1,17 @@
 // Server-side API route for fetching categories
-export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+export default defineEventHandler(async (event) => {
+  const clientConfig = getApiClientConfig(event)
   const locationId = 622103005 // Westmoreland location ID
 
-  // API URL format: baseUrl/api/ecommerce/categories
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/categories`
+  // API URL format: baseUrl/{tenant}/api/ecommerce/categories
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'categories')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
         locationId,
       },

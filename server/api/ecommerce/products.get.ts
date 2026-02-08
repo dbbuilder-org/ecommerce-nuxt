@@ -1,24 +1,19 @@
 // Server-side API route for fetching products
 // This keeps API credentials secure on the server
-export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const query = getQuery(event)
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+export default defineEventHandler(async (event) => {
+  const clientConfig = getApiClientConfig(event)
   const locationId = 622103005 // Westmoreland location ID
 
   // Use all-categorized endpoint for efficient loading
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/products/all-categorized`
+  // API URL format: baseUrl/{tenant}/api/ecommerce/products/all-categorized
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'products/all-categorized')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
         locationId,
         availableOnly: false,
@@ -31,7 +26,7 @@ export default defineEventHandler(async (event) => {
       data.products = data.products.map((product: any) => ({
         ...product,
         id: product.productId || product.id,
-        image: getProductImageUrl(product.imageFilename, apiBaseUrl, schoolCode),
+        image: getProductImageUrl(product.imageFilename, clientConfig.baseUrl, clientConfig.tenant),
       }))
     }
 
