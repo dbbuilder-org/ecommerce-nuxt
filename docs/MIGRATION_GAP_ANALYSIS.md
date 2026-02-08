@@ -9,6 +9,25 @@
 
 ---
 
+## Backend API Status
+
+The Nuxt app integrates with the **.NET 10 Payment API** (`api-payment-ecommerce-dotnet10`).
+
+**API Migration Status:** All 21 controllers migrated from VB.NET to .NET 10 C#
+
+| Backend Component | Status |
+|-------------------|--------|
+| .NET 10 API Core | ✅ Complete |
+| Ecommerce Endpoints | ✅ Complete |
+| Repository Layer | ✅ Complete |
+| Payment Gateways | ✅ Complete (Genius, WorldPay) |
+| Email Service | ✅ Complete |
+| Integration Tests | ✅ 45 tests passing |
+
+For backend details, see: `~/dev2/michaeljr/api-payment-ecommerce-dotnet10/CLAUDE.md`
+
+---
+
 ## Current State (Nuxt App)
 
 ### What's Working
@@ -23,6 +42,7 @@
 | Cart Persistence | ✅ Complete | localStorage with client plugin |
 | Security Headers | ✅ Complete | CSP, HSTS, XSS via nuxt-security |
 | SSR | ✅ Complete | Server-side rendering enabled |
+| .NET 10 API Integration | ✅ Complete | products, categories, pickup locations, config, payment |
 
 ### Current File Count
 - **Components**: 5 (Header, Footer, ProductCard, CartSidebar, Filters)

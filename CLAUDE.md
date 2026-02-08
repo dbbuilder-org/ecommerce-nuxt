@@ -6,6 +6,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SchoolVision Ecommerce built with Nuxt 3, implementing a Backend-for-Frontend (BFF) pattern for secure API handling. The key security improvement over the previous Vue SPA is that API secrets remain server-side and are never exposed to the browser.
 
+## Related Projects
+
+| Project | Path | Description |
+|---------|------|-------------|
+| .NET 10 API | `~/dev2/michaeljr/api-payment-ecommerce-dotnet10` | Backend Payment/Ecommerce API |
+| VB.NET Original | `~/dev2/michaeljr/PaymentAPI-original` | Legacy API (being migrated) |
+| Data Layer | `~/dev2/michaeljr/data-sqlserver-dotnet10` | Clean architecture Dapper repositories |
+
+## Backend API Integration
+
+This Nuxt app connects to the .NET 10 Payment API. The BFF pattern routes:
+- `server/api/ecommerce/*` → `.NET 10 API /{tenant}/api/ecommerce/*`
+
+### Implemented API Endpoints
+
+| BFF Route | Backend Endpoint | Status |
+|-----------|-----------------|--------|
+| `/api/ecommerce/products` | `products/all-categorized` | Integrated |
+| `/api/ecommerce/categories` | `categories` | Integrated |
+| `/api/ecommerce/pickup-locations` | `pickup-locations` | Integrated |
+| `/api/ecommerce/config` | `config` | Integrated |
+| `/api/ecommerce/initiate-payment` | `initiate_payment_v2` | Integrated |
+| `/api/ecommerce/check-email` | `check_email` | Integrated |
+| `/api/ecommerce/email-receipt` | `email-receipt` | Integrated |
+| `/api/ecommerce/validate-promo` | `validate-promo` | TODO |
+| `/api/ecommerce/orders` | `orders` | TODO |
+| `/api/ecommerce/shipping-quotes` | `shipping-quotes` | TODO |
+
 ## Commands
 
 ```bash
