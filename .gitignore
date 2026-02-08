@@ -67,5 +67,7 @@ postcss.config.js
 .nvmrc
 .pre-commit-config.yaml
 src.Tests
-package-lock.json
 .vercel
+
+# Development logs
+.dev-logs/
