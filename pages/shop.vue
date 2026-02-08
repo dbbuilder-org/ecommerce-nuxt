@@ -234,7 +234,7 @@ const categorySlug = computed(() => (route.query.category as string) || '')
 const { data: categoriesData } = await useFetch('/api/ecommerce/categories')
 const categories = computed(() => (categoriesData.value as any)?.categories || [])
 
-const selectedCategory = computed(() => categories.value.find((c: any) => c.slug === categorySlug.value))
+const selectedCategory = computed(() => categories.value.find((c: any) => c.slug === categorySlug.value) ?? null)
 
 // Fetch products with category filter
 const { data: productsData, pending } = await useFetch('/api/ecommerce/products', {

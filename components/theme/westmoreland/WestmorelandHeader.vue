@@ -194,8 +194,10 @@
     <!-- Shopping Cart Sidebar -->
     <ShopCartSidebar v-if="cartStore.isOpen" @close="cartStore.closeCart()" />
 
-    <!-- Auth Manager -->
-    <AuthAuthManager ref="authManagerRef" />
+    <!-- Auth Manager (client-only to prevent hydration mismatch) -->
+    <ClientOnly>
+      <AuthAuthManager ref="authManagerRef" />
+    </ClientOnly>
   </div>
 </template>
 

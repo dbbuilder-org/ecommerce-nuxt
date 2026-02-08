@@ -17,13 +17,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-only secrets (never sent to client)
     // Auto-mapped from NUXT_PAYMENT_API_SECRET, NUXT_PAYMENT_API_BASE_URL, NUXT_SIGNING_KEY
-    paymentApiSecret: '',
-    paymentApiBaseUrl: 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
+    // NOTE: Do NOT include tenant in baseUrl - buildApiUrl() adds it
+    paymentApiSecret: 'ecommerce-key-2025',
+    paymentApiBaseUrl: 'http://localhost:23500',
     signingKey: '',
 
-    // Ecommerce API base
-    ecommerceApiBase: 'https://paymentapi-ecommerce-test-v2.azurewebsites.net',
-    ecommerceApiKey: '',
+    // Ecommerce API base (no tenant prefix - buildApiUrl handles it)
+    ecommerceApiBase: 'http://localhost:23500',
+    ecommerceApiKey: 'ecommerce-key-2025',
 
     // Public config (available on client)
     // Auto-mapped from NUXT_PUBLIC_* env vars
@@ -79,23 +80,24 @@ export default defineNuxtConfig({
       // Content Security Policy
       contentSecurityPolicy: {
         'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.gstatic.com"],
+        'script-src': ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.gstatic.com", "blob:"],
+        'worker-src': ["'self'", "blob:"],
         'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        'img-src': ["'self'", "data:", "https:", "blob:"],
+        'img-src': ["'self'", "data:", "https:", "http:", "blob:"],
         'media-src': ["'self'", "data:", "https:", "blob:"],
         'font-src': ["'self'", "https://fonts.gstatic.com"],
-        'connect-src': ["'self'", "https://paymentapi-ecommerce-test-v2.azurewebsites.net", "https://*.schoolvision.io"],
+        'connect-src': ["'self'", "https://paymentapi-ecommerce-test-v2.azurewebsites.net", "https://paymentapi-dotnet10-staging.azurewebsites.net", "http://localhost:23500", "https://*.schoolvision.io"],
         'frame-src': ["'self'", "https://www.google.com"],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],
       },
-      // Strict Transport Security
-      strictTransportSecurity: {
+      // Strict Transport Security - disabled in dev, enabled in production
+      strictTransportSecurity: process.env.NODE_ENV === 'production' ? {
         maxAge: 31536000,
         includeSubdomains: true,
         preload: true,
-      },
+      } : false,
       // Prevent XSS attacks
       xXSSProtection: '1; mode=block',
       // Prevent MIME type sniffing

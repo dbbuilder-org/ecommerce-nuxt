@@ -209,8 +209,10 @@
       </div>
     </Transition>
 
-    <!-- Auth Manager -->
-    <AuthAuthManager ref="authManagerRef" />
+    <!-- Auth Manager (client-only to prevent hydration mismatch) -->
+    <ClientOnly>
+      <AuthAuthManager ref="authManagerRef" />
+    </ClientOnly>
   </header>
 </template>
 
