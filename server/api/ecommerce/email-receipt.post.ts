@@ -1,4 +1,5 @@
 // Server-side API route for emailing receipt
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface EmailReceiptResponse {
   success: boolean
@@ -6,7 +7,6 @@ interface EmailReceiptResponse {
 }
 
 export default defineEventHandler(async (event): Promise<EmailReceiptResponse> => {
-  const config = useRuntimeConfig()
   const body = await readBody(event)
 
   const { email, transactionId } = body
@@ -34,18 +34,13 @@ export default defineEventHandler(async (event): Promise<EmailReceiptResponse> =
     })
   }
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'email-receipt')
 
   try {
-    // Call backend API to send receipt email
-    await $fetch<{ success: boolean }>(`${apiBaseUrl}/api/ecommerce/email-receipt`, {
+    await $fetch<{ success: boolean }>(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         email,
         transactionId,

@@ -1,5 +1,6 @@
 // Register API route - Server-side user registration
 // Handles new user registration against the ecommerce API
+import { getApiClientConfig, buildTenantUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface RegisterApiResponse {
   Successful: boolean
@@ -43,16 +44,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const config = useRuntimeConfig()
+  const clientConfig = getApiClientConfig(event)
 
   try {
     // Call the ecommerce API for registration
-    const response = await $fetch<RegisterApiResponse>(`${config.ecommerceApiBase}/api/wallet/register`, {
+    const apiUrl = buildTenantUrl(clientConfig.baseUrl, clientConfig.tenant, 'wallet/register')
+    const response = await $fetch<RegisterApiResponse>(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || '',
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         email,
         password,

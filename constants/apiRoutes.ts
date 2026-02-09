@@ -119,7 +119,7 @@ export const Tenants = ['westmoreland', 'windermere', 'coastalab'] as const
 export type Tenant = (typeof Tenants)[number]
 
 /**
- * Build full API URL for a route
+ * Build full API URL for an ecommerce route
  * @param baseUrl - API base URL (e.g., https://api.example.com)
  * @param tenant - Tenant name (westmoreland, windermere, coastalab)
  * @param route - Route constant from EcommerceRoutes
@@ -132,6 +132,21 @@ export function buildApiUrl(
   // Remove trailing slash from baseUrl if present
   const normalizedBase = baseUrl.replace(/\/$/, '')
   return `${normalizedBase}/${tenant}/api/ecommerce/${route}`
+}
+
+/**
+ * Build full API URL for a non-ecommerce route (wallet, admin, etc.)
+ * @param baseUrl - API base URL (e.g., https://api.example.com)
+ * @param tenant - Tenant name (westmoreland, windermere, coastalab)
+ * @param route - Route path relative to /{tenant}/api/ (e.g., "wallet/loginuserlimit")
+ */
+export function buildTenantApiUrl(
+  baseUrl: string,
+  tenant: Tenant,
+  route: string
+): string {
+  const normalizedBase = baseUrl.replace(/\/$/, '')
+  return `${normalizedBase}/${tenant}/api/${route}`
 }
 
 /**

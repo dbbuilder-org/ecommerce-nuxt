@@ -8,7 +8,7 @@
  */
 
 import type { H3Event } from 'h3'
-import { EcommerceRoutes, buildApiUrl, type Tenant } from '~/constants/apiRoutes'
+import { EcommerceRoutes, buildApiUrl, buildTenantApiUrl, type Tenant } from '~/constants/apiRoutes'
 
 export interface ApiClientConfig {
   baseUrl: string
@@ -124,6 +124,18 @@ export async function apiDelete<T = any>(
     headers: getApiHeaders(config),
     query,
   })
+}
+
+/**
+ * Build a full tenant API URL for non-ecommerce routes (wallet, admin, etc.)
+ * Pattern: {baseUrl}/{tenant}/api/{route}
+ */
+export function buildTenantUrl(
+  baseUrl: string,
+  tenant: Tenant,
+  route: string
+): string {
+  return buildTenantApiUrl(baseUrl, tenant, route)
 }
 
 /**

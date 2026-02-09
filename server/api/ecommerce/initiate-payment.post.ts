@@ -2,18 +2,17 @@
 // CRITICAL: This keeps payment API credentials secure on the server
 // The frontend NEVER sees the payment API secret
 import { createHmac } from 'crypto'
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
-
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
 
   // Get the origin from the request for return URLs
   const origin = getRequestHeader(event, 'origin') ||
                  getRequestHeader(event, 'referer')?.split('/').slice(0, 3).join('/') ||
-                 `https://${schoolCode}-staging.schoolvision.io`
+                 `https://${clientConfig.tenant}-staging.schoolvision.io`
 
   // Validate required fields
   if (!body.cartItems || !Array.isArray(body.cartItems) || body.cartItems.length === 0) {
@@ -27,16 +26,14 @@ export default defineEventHandler(async (event) => {
   const timestamp = Date.now()
   const signature = createRequestSignature(body, timestamp, config.signingKey)
 
-  // API URL format: baseUrl/api/ecommerce/initiate_payment_v2
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/initiate_payment_v2`
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'initiate_payment_v2')
 
   try {
+    const headers = getApiHeaders(clientConfig)
     const response = await $fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
+        ...headers,
         'X-Request-Timestamp': timestamp.toString(),
         'X-Request-Signature': signature,
       },

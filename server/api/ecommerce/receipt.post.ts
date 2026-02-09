@@ -1,4 +1,5 @@
 // Server-side API route for fetching receipt data from secure token
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface ReceiptData {
   transactionId?: string | null
@@ -20,7 +21,6 @@ interface ReceiptResponse {
 }
 
 export default defineEventHandler(async (event): Promise<ReceiptResponse> => {
-  const config = useRuntimeConfig()
   const body = await readBody(event)
 
   const { receiptToken } = body
@@ -32,18 +32,13 @@ export default defineEventHandler(async (event): Promise<ReceiptResponse> => {
     })
   }
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'receipt')
 
   try {
-    // Call backend API to validate token and get receipt data
-    const response = await $fetch<ReceiptResponse>(`${apiBaseUrl}/api/ecommerce/receipt`, {
+    const response = await $fetch<ReceiptResponse>(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         receiptToken,
       },

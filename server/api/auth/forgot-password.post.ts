@@ -1,5 +1,6 @@
 // Forgot Password API route
 // Initiates password reset flow
+import { getApiClientConfig, buildTenantUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -12,16 +13,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const config = useRuntimeConfig()
+  const clientConfig = getApiClientConfig(event)
 
   try {
     // Call the ecommerce API for password reset
-    const response = await $fetch(`${config.ecommerceApiBase}/api/wallet/forgotpassword`, {
+    const apiUrl = buildTenantUrl(clientConfig.baseUrl, clientConfig.tenant, 'wallet/forgotpassword')
+    await $fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || '',
-      },
+      headers: getApiHeaders(clientConfig),
       body: { email },
     })
 

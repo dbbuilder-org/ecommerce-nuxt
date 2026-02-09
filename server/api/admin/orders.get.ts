@@ -1,10 +1,9 @@
 // Server-side API route for fetching admin orders
 // Protected endpoint - requires admin authentication
+import { getApiClientConfig, buildTenantUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.ecommerceApiBase || config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
 
   // Get query parameters
   const query = getQuery(event)
@@ -13,19 +12,15 @@ export default defineEventHandler(async (event) => {
   const limit = parseInt(query.limit as string) || 20
   const search = query.search as string | undefined
 
-  // API URL for orders
-  const apiUrl = `${apiBaseUrl}/api/admin/orders`
+  // API URL for orders: {baseUrl}/{tenant}/api/admin/orders
+  const apiUrl = buildTenantUrl(clientConfig.baseUrl, clientConfig.tenant, 'admin/orders')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || config.paymentApiSecret || '',
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
-        schoolCode,
+        schoolCode: clientConfig.tenant,
         status,
         page,
         limit,

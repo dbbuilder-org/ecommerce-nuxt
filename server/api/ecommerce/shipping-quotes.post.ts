@@ -1,10 +1,9 @@
 // Server-side API route for fetching shipping quotes
 // Proxies to the ecommerce API with secure credentials
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.ecommerceApiBase || config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
   const body = await readBody(event)
 
   // Validate request body
@@ -22,19 +21,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // API URL for shipping quotes (multi-tenant: /{schoolCode}/api/ecommerce/shipping/quotes)
-  const apiUrl = `${apiBaseUrl}/${schoolCode}/api/ecommerce/shipping/quotes`
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'shipping/quotes')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || config.paymentApiSecret || '',
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
-        schoolCode,
+        schoolCode: clientConfig.tenant,
         toAddress: body.toAddress,
         items: body.items,
         orderSubtotal: body.orderSubtotal || 0,

@@ -1,4 +1,5 @@
 // Server-side API route for fetching user orders
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface SessionData {
   user: {
@@ -17,8 +18,6 @@ interface OrdersResponse {
 }
 
 export default defineEventHandler(async (event): Promise<OrdersResponse> => {
-  const config = useRuntimeConfig()
-
   // Get session cookie to identify user
   const sessionToken = getCookie(event, 'auth_session')
 
@@ -38,18 +37,13 @@ export default defineEventHandler(async (event): Promise<OrdersResponse> => {
     })
   }
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'orders')
 
   try {
-    // Call backend API to get user orders
-    const response = await $fetch<OrdersResponse>(`${apiBaseUrl}/api/ecommerce/orders`, {
+    const response = await $fetch<OrdersResponse>(apiUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       query: {
         userId: session.user.id,
         walletId: session.user.walletId,

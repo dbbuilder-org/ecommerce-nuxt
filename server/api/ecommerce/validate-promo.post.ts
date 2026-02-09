@@ -1,4 +1,5 @@
 // Server-side API route for validating promo codes
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface PromoCode {
   code: string
@@ -16,7 +17,6 @@ interface PromoCodeResponse {
 }
 
 export default defineEventHandler(async (event): Promise<PromoCodeResponse> => {
-  const config = useRuntimeConfig()
   const body = await readBody(event)
 
   const { code, subtotal } = body
@@ -28,18 +28,13 @@ export default defineEventHandler(async (event): Promise<PromoCodeResponse> => {
     })
   }
 
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'validate-promo')
 
   try {
-    // Call backend API to validate promo code
-    const response = await $fetch<PromoCodeResponse>(`${apiBaseUrl}/api/ecommerce/validate-promo`, {
+    const response = await $fetch<PromoCodeResponse>(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.paymentApiSecret,
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         code: code.toUpperCase(),
         subtotal: subtotal || 0,

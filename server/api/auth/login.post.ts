@@ -1,5 +1,6 @@
 // Login API route - Server-side authentication
 // Handles user login against the ecommerce API
+import { getApiClientConfig, buildTenantUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 interface LoginApiResponse {
   Successful: boolean
@@ -29,16 +30,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const config = useRuntimeConfig()
+  const clientConfig = getApiClientConfig(event)
 
   try {
     // Call the ecommerce API for authentication
-    const response = await $fetch<LoginApiResponse>(`${config.ecommerceApiBase}/api/wallet/loginuserlimit`, {
+    const apiUrl = buildTenantUrl(clientConfig.baseUrl, clientConfig.tenant, 'wallet/loginuserlimit')
+    const response = await $fetch<LoginApiResponse>(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || '',
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         email,
         password,

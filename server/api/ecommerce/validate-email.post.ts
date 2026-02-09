@@ -1,10 +1,9 @@
 // Server-side API route for validating if email exists
 // Used during checkout to detect returning customers
+import { getApiClientConfig, buildEcommerceApiUrl, getApiHeaders } from '~/server/utils/apiClient'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const schoolCode = config.public.schoolCode || 'westmoreland'
-  const apiBaseUrl = config.ecommerceApiBase || config.paymentApiBaseUrl
+  const clientConfig = getApiClientConfig(event)
   const body = await readBody(event)
 
   // Validate email
@@ -24,20 +23,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // API URL for email validation
-  const apiUrl = `${apiBaseUrl}/api/ecommerce/check_email`
+  const apiUrl = buildEcommerceApiUrl(clientConfig.baseUrl, clientConfig.tenant, 'check_email')
 
   try {
     const response = await $fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': config.ecommerceApiKey || config.paymentApiSecret || '',
-        'X-School-Code': schoolCode,
-      },
+      headers: getApiHeaders(clientConfig),
       body: {
         email: body.email,
-        schoolCode,
+        schoolCode: clientConfig.tenant,
       },
     })
 
